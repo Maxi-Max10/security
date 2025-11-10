@@ -26,6 +26,16 @@
 - ✅ Gráficos de éxito/fallos de login
 
 ### 4. **Gestión de Trabajadores (Nuevo)**
+### 5. **Nuevo Dashboard Moderno (Admin)**
+- ✅ Layout modular con sidebar fija y header usando partials
+- ✅ Tarjetas KPI claras y compactas
+- ✅ Accesos rápidos a módulos clave (Trabajadores, Usuarios, Reportes futuros)
+- ✅ Estilo oscuro profesional con glass effect y blur
+- ✅ CSS dedicado: `assets/css/admin.css` para mantener separación de estilos
+- ✅ JS ligero para tema y futuras interacciones: `assets/js/admin.js`
+- ✅ Base escalable para agregar módulos: ubicaciones, asistencia, reportes avanzados
+- ✅ Responsive total (colapsa sidebar en tablet/móvil)
+
 - ✅ Nueva sección en Admin: `admin/workers.php`
 - ✅ Listado tipo grid con paginación, ordenamiento y búsqueda
 - ✅ Crear, editar y eliminar trabajadores (solo admin)
@@ -274,8 +284,10 @@ define('DB_NAME', 'u404968876_security');
 - `/dashboard.php` - Panel de usuario
 
 ### Solo Administrador:
-- `/admin/dashboard.php` - Panel administrativo
+- `/admin/dashboard.php` - Panel administrativo (diseño moderno)
 - `/admin/users.php` - Gestión de usuarios
+-- `/admin/workers.php` - Gestión de trabajadores (AJAX)
+-- `/admin/api/workers.php` - API JSON trabajadores
 
 ---
 

@@ -43,171 +43,87 @@ $user = get_user_data();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - <?php echo SITE_NAME; ?></title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <script defer src="../assets/js/admin.js"></script>
 </head>
 <body>
-    <div class="navbar">
-        <div class="container">
-            <div class="nav-content">
-                <h2>Panel de Administración</h2>
-                <div class="nav-right">
-                    <span class="user-info"><?php echo htmlspecialchars($user['username']); ?></span>
-                    <a href="users.php" class="btn btn-small btn-outline">Gestionar Usuarios</a>
-                    <a href="workers.php" class="btn btn-small btn-outline">Trabajadores</a>
-                    <a href="../dashboard.php" class="btn btn-small">Mi Perfil</a>
-                    <a href="../logout.php" class="btn btn-small btn-secondary">Cerrar Sesión</a>
-                </div>
-            </div>
+  <div class="admin-layout">
+    <?php include __DIR__.'/partials/sidebar.php'; ?>
+    <?php include __DIR__.'/partials/header.php'; ?>
+    <main class="content">
+      <?php display_flash_message(); ?>
+
+      <div class="grid kpis">
+        <div class="card"><h4>Usuarios</h4><div class="kpi"><?php echo $total_users; ?></div><div class="meta">Registrados</div></div>
+        <div class="card"><h4>Activos</h4><div class="kpi"><?php echo $active_users; ?></div><div class="meta">Usuarios activos</div></div>
+        <div class="card"><h4>Hoy</h4><div class="kpi"><?php echo $today_users; ?></div><div class="meta">Registros hoy</div></div>
+        <div class="card"><h4>Intentos</h4><div class="kpi"><?php echo $total_attempts; ?></div><div class="meta">Logins totales</div></div>
+      </div>
+
+      <section class="section">
+        <h3>Accesos rápidos</h3>
+        <div class="grid">
+          <div class="card" style="grid-column: span 4"><h4>👷 Trabajadores</h4><p class="meta">Gestiona altas, bajas y ubicaciones</p><p><a class="btn primary" href="workers.php">Abrir</a></p></div>
+          <div class="card" style="grid-column: span 4"><h4>👥 Usuarios</h4><p class="meta">Permisos y estados</p><p><a class="btn" href="users.php">Abrir</a></p></div>
+          <div class="card" style="grid-column: span 4"><h4>📑 Reportes</h4><p class="meta">Indicadores y descargas</p><p><a class="btn" href="#">Próximamente</a></p></div>
         </div>
-    </div>
-    
-    <div class="container">
-        <div class="dashboard-box">
-            <?php display_flash_message(); ?>
-            
-            <h1>📊 Dashboard Administrativo</h1>
-            
-            <!-- Estadísticas -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-icon">👥</span>
-                    <span class="stat-value"><?php echo $total_users; ?></span>
-                    <span class="stat-label">Total Usuarios</span>
-                </div>
-                
-                <div class="stat-card success">
-                    <span class="stat-icon">✓</span>
-                    <span class="stat-value"><?php echo $active_users; ?></span>
-                    <span class="stat-label">Usuarios Activos</span>
-                </div>
-                
-                <div class="stat-card warning">
-                    <span class="stat-icon">🆕</span>
-                    <span class="stat-value"><?php echo $today_users; ?></span>
-                    <span class="stat-label">Registros Hoy</span>
-                </div>
-                
-                <div class="stat-card info">
-                    <span class="stat-icon">🔐</span>
-                    <span class="stat-value"><?php echo $total_attempts; ?></span>
-                    <span class="stat-label">Intentos Login</span>
-                </div>
-            </div>
-            
-            <!-- Información del Admin -->
-            <div class="user-profile">
-                <h2>👤 Tu Información</h2>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <strong>Usuario:</strong>
-                        <span><?php echo htmlspecialchars($user['username']); ?></span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Email:</strong>
-                        <span><?php echo htmlspecialchars($user['email']); ?></span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Rol:</strong>
-                        <span class="badge badge-admin">ADMINISTRADOR</span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Miembro desde:</strong>
-                        <span><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Usuarios Recientes -->
-            <div class="user-profile">
-                <h2>🆕 Usuarios Recientes</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuario</th>
-                            <th>Email</th>
-                            <th>Rol</th>
-                            <th>Registro</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($usr = $recent_users->fetch_assoc()): ?>
-                        <tr>
-                            <td><?php echo $usr['id']; ?></td>
-                            <td><?php echo htmlspecialchars($usr['username']); ?></td>
-                            <td><?php echo htmlspecialchars($usr['email']); ?></td>
-                            <td>
-                                <span class="badge badge-<?php echo $usr['role']; ?>">
-                                    <?php echo strtoupper($usr['role']); ?>
-                                </span>
-                            </td>
-                            <td><?php echo date('d/m/Y H:i', strtotime($usr['created_at'])); ?></td>
-                            <td>
-                                <span class="badge badge-<?php echo $usr['is_active'] ? 'active' : 'inactive'; ?>">
-                                    <?php echo $usr['is_active'] ? 'ACTIVO' : 'INACTIVO'; ?>
-                                </span>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Intentos de Login Recientes -->
-            <div class="user-profile">
-                <h2>🔐 Últimos Intentos de Login</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Usuario</th>
-                            <th>Email</th>
-                            <th>IP</th>
-                            <th>Fecha/Hora</th>
-                            <th>Resultado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($attempt = $recent_attempts->fetch_assoc()): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($attempt['username'] ?? 'Desconocido'); ?></td>
-                            <td><?php echo htmlspecialchars($attempt['email']); ?></td>
-                            <td><?php echo htmlspecialchars($attempt['ip_address']); ?></td>
-                            <td><?php echo date('d/m/Y H:i:s', strtotime($attempt['attempt_time'])); ?></td>
-                            <td>
-                                <span class="badge badge-<?php echo $attempt['success'] ? 'active' : 'inactive'; ?>">
-                                    <?php echo $attempt['success'] ? '✓ EXITOSO' : '✕ FALLIDO'; ?>
-                                </span>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Estadísticas de Login -->
-            <div class="stats-grid" style="margin-top: 30px;">
-                <div class="stat-card success">
-                    <span class="stat-icon">✓</span>
-                    <span class="stat-value"><?php echo $success_attempts; ?></span>
-                    <span class="stat-label">Logins Exitosos</span>
-                </div>
-                
-                <div class="stat-card" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <span class="stat-icon">✕</span>
-                    <span class="stat-value"><?php echo $failed_attempts; ?></span>
-                    <span class="stat-label">Logins Fallidos</span>
-                </div>
-                
-                <div class="stat-card info">
-                    <span class="stat-icon">📊</span>
-                    <span class="stat-value"><?php echo $total_attempts > 0 ? round(($success_attempts / $total_attempts) * 100) : 0; ?>%</span>
-                    <span class="stat-label">Tasa de Éxito</span>
-                </div>
-            </div>
+      </section>
+
+      <section class="section">
+        <h3>Usuarios recientes</h3>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>ID</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Registro</th><th>Estado</th></tr></thead>
+            <tbody>
+              <?php while ($usr = $recent_users->fetch_assoc()): ?>
+              <tr>
+                <td><?php echo $usr['id']; ?></td>
+                <td><?php echo htmlspecialchars($usr['username']); ?></td>
+                <td><?php echo htmlspecialchars($usr['email']); ?></td>
+                <td><?php echo strtoupper($usr['role']); ?></td>
+                <td><?php echo date('d/m/Y H:i', strtotime($usr['created_at'])); ?></td>
+                <td><?php echo $usr['is_active'] ? 'ACTIVO' : 'INACTIVO'; ?></td>
+              </tr>
+              <?php endwhile; ?>
+            </tbody>
+          </table>
         </div>
-    </div>
-    
-    <?php $conn->close(); ?>
+      </section>
+
+      <section class="section">
+        <h3>Últimos intentos de login</h3>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Usuario</th><th>Email</th><th>IP</th><th>Fecha</th><th>Resultado</th></tr></thead>
+            <tbody>
+              <?php while ($attempt = $recent_attempts->fetch_assoc()): ?>
+              <tr>
+                <td><?php echo htmlspecialchars($attempt['username'] ?? 'Desconocido'); ?></td>
+                <td><?php echo htmlspecialchars($attempt['email']); ?></td>
+                <td><?php echo htmlspecialchars($attempt['ip_address']); ?></td>
+                <td><?php echo date('d/m/Y H:i:s', strtotime($attempt['attempt_time'])); ?></td>
+                <td><?php echo $attempt['success'] ? '✓ EXITOSO' : '✕ FALLIDO'; ?></td>
+              </tr>
+              <?php endwhile; ?>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="grid" style="margin-top:16px">
+        <div class="card" style="grid-column: span 6">
+          <h4>Tasa de éxito</h4>
+          <div class="kpi"><?php echo $total_attempts > 0 ? round(($success_attempts / $total_attempts) * 100) : 0; ?>%</div>
+          <div class="meta">Éxito vs total</div>
+        </div>
+        <div class="card" style="grid-column: span 6">
+          <h4>Fallidos</h4>
+          <div class="kpi"><?php echo $failed_attempts; ?></div>
+          <div class="meta">Últimos registros</div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <?php $conn->close(); ?>
 </body>
 </html>
