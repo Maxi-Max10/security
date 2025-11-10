@@ -1,0 +1,25 @@
+# Archivos de configuración local
+config/database.php
+
+# Logs
+logs/
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporal
+*.tmp
+*.temp
+
+# Backups
+*.bak
+*.backup
