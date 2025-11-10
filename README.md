@@ -35,54 +35,36 @@ Sistema de autenticación con PHP y MySQL con las siguientes características:
 
 ## Instalación en Hostinger
 
-### 1. Preparar el repositorio Git
+**📖 GUÍA COMPLETA**: Lee el archivo `HOSTINGER_DATABASE_SETUP.md` para instrucciones detalladas paso a paso.
 
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin <tu-repositorio-github>
-git push -u origin main
-```
+### Resumen Rápido:
 
-### 2. Configurar en Hostinger
+1. **Crear base de datos en Hostinger**
+   - hPanel → Bases de datos MySQL → Crear nueva
+   - Anotar: host, usuario, contraseña, nombre de BD
 
-1. **Accede a hPanel de Hostinger**
-2. **Ve a "Sitios web" → Selecciona tu dominio**
-3. **Git → Crear repositorio**
-   - URL del repositorio: Tu URL de GitHub
+2. **Importar estructura**
+   - phpMyAdmin → Importar → `database/schema.sql`
+
+3. **Configurar archivo de conexión**
+   ```bash
+   # Copiar plantilla
+   cp config/database.hostinger.php config/database.php
+   
+   # Editar config/database.php con tus credenciales reales
+   ```
+
+4. **Conectar Git en Hostinger**
+   - hPanel → Git → Crear repositorio
+   - URL: Tu repo de GitHub
    - Branch: main
-   - Ruta de destino: public_html (o la carpeta que prefieras)
+   - Destino: public_html
 
-### 3. Configurar Base de Datos
+5. **Actualizar configuración del sitio**
+   - Edita `config/config.php` con tu dominio real
+   - Habilita HTTPS si está disponible
 
-1. **En hPanel, ve a "Bases de datos MySQL"**
-2. **Crea una nueva base de datos**
-3. **Crea un usuario y asígnalo a la base de datos**
-4. **Importa el archivo `database/schema.sql` usando phpMyAdmin**
-
-### 4. Actualizar configuración
-
-Edita `config/database.php` con los datos de Hostinger:
-
-```php
-define('DB_HOST', 'localhost'); // o el host que te proporcione Hostinger
-define('DB_USER', 'tu_usuario_hostinger');
-define('DB_PASS', 'tu_contraseña_hostinger');
-define('DB_NAME', 'tu_base_datos_hostinger');
-```
-
-Edita `config/config.php`:
-
-```php
-define('SITE_URL', 'https://tudominio.com');
-ini_set('session.cookie_secure', 1); // Habilitar para HTTPS
-```
-
-### 5. Permisos de carpetas
-
-Asegúrate de que la carpeta `logs/` tenga permisos de escritura (755 o 775).
+📚 Para más detalles, consulta: `HOSTINGER_DATABASE_SETUP.md`
 
 ## Credenciales de Prueba
 

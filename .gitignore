@@ -1,5 +1,6 @@
-# Archivos de configuración local
+# Archivos de configuración local (NUNCA subir credenciales reales)
 config/database.php
+config/database.local.php
 
 # Logs
 logs/
