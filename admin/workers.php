@@ -99,173 +99,10 @@ function validate_worker_input($data, $is_update = false, $existing_id = null, $
 $message = '';
 $message_type = '';
 
-// Acciones POST: create, update, delete
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
-        $message = 'Token de seguridad inválido.';
-        $message_type = 'error';
-    } else {
-        $action = $_POST['action'] ?? '';
+// Con AJAX implementado, toda la mutación y listado se hace vía /admin/api/workers.php
 
-        if ($action === 'delete') {
-            $id = intval($_POST['id'] ?? 0);
-            if ($id > 0) {
-                $stmt = $conn->prepare("DELETE FROM workers WHERE id = ?");
-                $stmt->bind_param('i', $id);
-                if ($stmt->execute()) {
-                    $message = 'Trabajador eliminado correctamente.';
-                    $message_type = 'success';
-                } else {
-                    $message = 'No se pudo eliminar el trabajador.';
-                    $message_type = 'error';
-                }
-                $stmt->close();
-            }
-        } elseif (in_array($action, ['create','update'])) {
-            $existing_id = $action === 'update' ? intval($_POST['id'] ?? 0) : null;
-            [$valid, $clean] = (function() use ($conn, $action, $existing_id){
-                $res = validate_worker_input($_POST, $action==='update', $existing_id, $conn);
-                return [$res['errors'], $res['clean']];
-            })();
-            $errors = $valid;
-
-            if (empty($errors)) {
-                $first_name = $clean['first_name'];
-                $last_name = $clean['last_name'];
-                $dni = $clean['dni'];
-                $email = $clean['email'];
-                $cvu_alias = $clean['cvu_alias'] !== '' ? $clean['cvu_alias'] : null;
-                $age = ($clean['age'] !== '') ? intval($clean['age']) : null;
-                $work_place = $clean['work_place'];
-                $address_text = $clean['address_text'];
-                $address_url = $clean['address_url'];
-                $lat = $clean['lat'];
-                $lng = $clean['lng'];
-                $uid = intval($_SESSION['user_id']);
-
-                if ($action === 'create') {
-                    $sql = "INSERT INTO workers (first_name,last_name,dni,email,cvu_alias,age,work_place,address_text,address_url,latitude,longitude,created_by,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?, ?)";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param(
-                        'sssssisssddii',
-                        $first_name,
-                        $last_name,
-                        $dni,
-                        $email,
-                        $cvu_alias,
-                        $age,
-                        $work_place,
-                        $address_text,
-                        $address_url,
-                        $lat,
-                        $lng,
-                        $uid,
-                        $uid
-                    );
-                    $ok = $stmt->execute();
-                    $stmt->close();
-                    if ($ok) {
-                        $message = 'Trabajador creado correctamente.';
-                        $message_type = 'success';
-                    } else {
-                        $message = 'No se pudo crear el trabajador.';
-                        $message_type = 'error';
-                    }
-                } else { // update
-                    $id = $existing_id;
-                    $sql = "UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id = ?";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param(
-                        'sssssisssddii',
-                        $first_name,
-                        $last_name,
-                        $dni,
-                        $email,
-                        $cvu_alias,
-                        $age,
-                        $work_place,
-                        $address_text,
-                        $address_url,
-                        $lat,
-                        $lng,
-                        $uid,
-                        $id
-                    );
-                    $ok = $stmt->execute();
-                    $stmt->close();
-                    if ($ok) {
-                        $message = 'Trabajador actualizado correctamente.';
-                        $message_type = 'success';
-                    } else {
-                        $message = 'No se pudo actualizar el trabajador.';
-                        $message_type = 'error';
-                    }
-                }
-            } else {
-                // Guardar errores en sesión para mostrarlos
-                $_SESSION['form_errors'] = $errors;
-                $_SESSION['form_old'] = $_POST;
-            }
-        }
-    }
-}
-
-// Parámetros de lista: paginación, ordenamiento y búsqueda
-$per_page = 10;
-$page = max(1, intval($_GET['page'] ?? 1));
-$offset = ($page - 1) * $per_page;
-
-$allowed_sort = ['first_name','last_name','dni','email','cvu_alias','age','work_place'];
-$sort_by = $_GET['sort'] ?? 'last_name';
-if (!in_array($sort_by, $allowed_sort)) { $sort_by = 'last_name'; }
-$sort_dir = strtolower($_GET['dir'] ?? 'asc') === 'desc' ? 'DESC' : 'ASC';
-
-$q = trim($_GET['q'] ?? '');
-$where = '';
-$params = [];
-$types = '';
-if ($q !== '') {
-    $where = "WHERE (first_name LIKE ? OR last_name LIKE ? OR dni LIKE ?)";
-    $like = "%$q%";
-    $params = [$like, $like, $like];
-    $types = 'sss';
-}
-
-// Total
-if ($where) {
-    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM workers $where");
-    $stmt->bind_param($types, ...$params);
-    $stmt->execute();
-    $total = $stmt->get_result()->fetch_assoc()['total'];
-    $stmt->close();
-} else {
-    $total = $conn->query("SELECT COUNT(*) as total FROM workers")->fetch_assoc()['total'];
-}
-
-$total_pages = max(1, ceil($total / $per_page));
-
-// Datos página
-if ($where) {
-    $sql = "SELECT * FROM workers $where ORDER BY $sort_by $sort_dir LIMIT ? OFFSET ?";
-    $stmt = $conn->prepare($sql);
-    // agregar tipos para LIMIT/OFFSET
-    $bindTypes = $types . 'ii';
-    $params2 = array_merge($params, [$per_page, $offset]);
-    $stmt->bind_param($bindTypes, ...$params2);
-    $stmt->execute();
-    $workers = $stmt->get_result();
-} else {
-    $sql = "SELECT * FROM workers ORDER BY $sort_by $sort_dir LIMIT ? OFFSET ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param('ii', $per_page, $offset);
-    $stmt->execute();
-    $workers = $stmt->get_result();
-}
-
-// Errores anteriores del form
-$form_errors = $_SESSION['form_errors'] ?? [];
-$form_old = $_SESSION['form_old'] ?? [];
-unset($_SESSION['form_errors'], $_SESSION['form_old']);
+$form_errors = [];
+$form_old = [];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -329,15 +166,11 @@ unset($_SESSION['form_errors'], $_SESSION['form_old']);
         <div class="dashboard-box" style="max-width:1200px;">
             <h1>👷 Gestión de Trabajadores</h1>
 
-            <?php if ($message): ?>
-                <div class="alert alert-<?php echo $message_type; ?>"><?php echo htmlspecialchars($message); ?></div>
-            <?php endif; ?>
+            <div id="flash" style="display:none;"></div>
 
             <div class="toolbar">
-                <form class="search-box" method="GET" action="workers.php">
-                    <input type="text" name="q" placeholder="Buscar por nombre, apellido o DNI" value="<?php echo htmlspecialchars($q); ?>">
-                    <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort_by); ?>">
-                    <input type="hidden" name="dir" value="<?php echo strtolower($sort_dir); ?>">
+                <form class="search-box" id="searchForm">
+                    <input type="text" id="searchQ" placeholder="Buscar por nombre, apellido o DNI">
                     <button class="btn btn-primary btn-small" type="submit">Buscar</button>
                 </form>
                 <button class="btn btn-success btn-small" onclick="openModal('createModal')">+ Nuevo trabajador</button>
@@ -347,78 +180,23 @@ unset($_SESSION['form_errors'], $_SESSION['form_old']);
                 <table>
                     <thead>
                         <tr>
-                            <th class="sortable"><a href="?<?php echo http_build_query(['q'=>$q,'sort'=>'first_name','dir'=>$sort_by==='first_name' && $sort_dir==='ASC'?'desc':'asc']); ?>">Nombre</a></th>
-                            <th class="sortable"><a href="?<?php echo http_build_query(['q'=>$q,'sort'=>'last_name','dir'=>$sort_by==='last_name' && $sort_dir==='ASC'?'desc':'asc']); ?>">Apellido</a></th>
-                            <th class="sortable"><a href="?<?php echo http_build_query(['q'=>$q,'sort'=>'dni','dir'=>$sort_by==='dni' && $sort_dir==='ASC'?'desc':'asc']); ?>">DNI</a></th>
-                            <th class="sortable"><a href="?<?php echo http_build_query(['q'=>$q,'sort'=>'email','dir'=>$sort_by==='email' && $sort_dir==='ASC'?'desc':'asc']); ?>">Email</a></th>
+                            <th class="sortable"><a href="#" data-sort="first_name">Nombre</a></th>
+                            <th class="sortable"><a href="#" data-sort="last_name">Apellido</a></th>
+                            <th class="sortable"><a href="#" data-sort="dni">DNI</a></th>
+                            <th class="sortable"><a href="#" data-sort="email">Email</a></th>
                             <th>CVU/Alias</th>
-                            <th class="sortable"><a href="?<?php echo http_build_query(['q'=>$q,'sort'=>'age','dir'=>$sort_by==='age' && $sort_dir==='ASC'?'desc':'asc']); ?>">Edad</a></th>
-                            <th class="sortable"><a href="?<?php echo http_build_query(['q'=>$q,'sort'=>'work_place','dir'=>$sort_by==='work_place' && $sort_dir==='ASC'?'desc':'asc']); ?>">Lugar de trabajo</a></th>
+                            <th class="sortable"><a href="#" data-sort="age">Edad</a></th>
+                            <th class="sortable"><a href="#" data-sort="work_place">Lugar de trabajo</a></th>
                             <th>Dirección</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <?php while($w = $workers->fetch_assoc()): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($w['first_name']); ?></td>
-                            <td><?php echo htmlspecialchars($w['last_name']); ?></td>
-                            <td><?php echo htmlspecialchars($w['dni']); ?></td>
-                            <td><?php echo htmlspecialchars($w['email']); ?></td>
-                            <td><?php echo htmlspecialchars($w['cvu_alias'] ?? ''); ?></td>
-                            <td><?php echo htmlspecialchars($w['age'] ?? ''); ?></td>
-                            <td><?php echo htmlspecialchars($w['work_place']); ?></td>
-                            <td>
-                                <?php if ($w['address_url']): ?>
-                                    <a href="<?php echo htmlspecialchars($w['address_url']); ?>" target="_blank">Mapa</a>
-                                    <?php if ($w['latitude'] && $w['longitude']): ?>
-                                        <small>(<?php echo $w['latitude'] . ', ' . $w['longitude']; ?>)</small>
-                                    <?php endif; ?>
-                                <?php else: ?>
-                                    <?php echo htmlspecialchars($w['address_text'] ?? ''); ?>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <div class="grid-actions">
-                                    <button class="btn btn-small btn-outline" onclick='editWorker(<?php echo json_encode([
-                                        'id' => $w['id'],
-                                        'first_name' => $w['first_name'],
-                                        'last_name' => $w['last_name'],
-                                        'dni' => $w['dni'],
-                                        'email' => $w['email'],
-                                        'cvu_alias' => $w['cvu_alias'],
-                                        'age' => $w['age'],
-                                        'work_place' => $w['work_place'],
-                                        'address' => $w['address_url'] ? $w['address_url'] : ($w['address_text'] ?? ''),
-                                    ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>✏️ Editar</button>
-                                    <form method="POST" onsubmit="return confirm('¿Eliminar este trabajador?')">
-                                        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="id" value="<?php echo $w['id']; ?>">
-                                        <button class="btn btn-small btn-danger" type="submit">🗑️ Eliminar</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
+                    <tbody id="workersBody"></tbody>
                 </table>
             </div>
 
             <!-- Paginación -->
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <strong>Total:</strong> <?php echo $total; ?> | Página <?php echo $page; ?> de <?php echo $total_pages; ?>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <?php if ($page > 1): ?>
-                        <a class="btn btn-small btn-outline" href="?<?php echo http_build_query(['q'=>$q,'sort'=>$sort_by,'dir'=>strtolower($sort_dir),'page'=>$page-1]); ?>">← Anterior</a>
-                    <?php endif; ?>
-                    <?php if ($page < $total_pages): ?>
-                        <a class="btn btn-small btn-outline" href="?<?php echo http_build_query(['q'=>$q,'sort'=>$sort_by,'dir'=>strtolower($sort_dir),'page'=>$page+1]); ?>">Siguiente →</a>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <div id="pagination" style="display:flex; justify-content:space-between; align-items:center;"></div>
         </div>
     </div>
 
@@ -429,7 +207,7 @@ unset($_SESSION['form_errors'], $_SESSION['form_old']);
                 <h3>Nuevo Trabajador</h3>
                 <span class="close" onclick="closeModal('createModal')">✕</span>
             </div>
-            <form method="POST" id="createForm">
+            <form id="createForm">
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <input type="hidden" name="action" value="create">
                 <div class="form-group">
@@ -488,7 +266,7 @@ unset($_SESSION['form_errors'], $_SESSION['form_old']);
                 <h3>Editar Trabajador</h3>
                 <span class="close" onclick="closeModal('editModal')">✕</span>
             </div>
-            <form method="POST" id="editForm">
+            <form id="editForm">
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="id" value="">
@@ -533,6 +311,123 @@ unset($_SESSION['form_errors'], $_SESSION['form_old']);
         </div>
     </div>
 
+    <script>
+        const csrfToken = <?php echo json_encode($csrf_token); ?>;
+        let state = { page: 1, per_page: 10, sort: 'last_name', dir: 'asc', q: '' };
+
+        function showFlash(text, type='success'){
+            const box = document.getElementById('flash');
+            box.className = 'alert alert-' + (type==='success'?'success':type);
+            box.textContent = text;
+            box.style.display = 'block';
+            setTimeout(()=>{ box.style.display = 'none'; }, 3000);
+        }
+
+        async function fetchList(){
+            const params = new URLSearchParams({ action:'list', page: state.page, limit: state.per_page, sort: state.sort, dir: state.dir, q: state.q });
+            const res = await fetch('api/workers.php?' + params.toString(), { credentials: 'same-origin' });
+            const json = await res.json();
+            if (!json.ok) { showFlash(json.error || 'Error al cargar', 'error'); return; }
+            renderTable(json.data);
+            renderPagination(json);
+        }
+
+        function renderTable(rows){
+            const tbody = document.getElementById('workersBody');
+            tbody.innerHTML = '';
+            rows.forEach(w => {
+                const tr = document.createElement('tr');
+                const addr = w.address_url ? `<a href="${w.address_url}" target="_blank">Mapa</a>${(w.latitude && w.longitude)?` <small>(${w.latitude}, ${w.longitude})</small>`:''}` : (w.address_text||'');
+                tr.innerHTML = `
+                    <td>${escapeHtml(w.first_name||'')}</td>
+                    <td>${escapeHtml(w.last_name||'')}</td>
+                    <td>${escapeHtml(w.dni||'')}</td>
+                    <td>${escapeHtml(w.email||'')}</td>
+                    <td>${escapeHtml(w.cvu_alias||'')}</td>
+                    <td>${w.age??''}</td>
+                    <td>${escapeHtml(w.work_place||'')}</td>
+                    <td>${addr}</td>
+                    <td>
+                        <div class="grid-actions">
+                            <button class="btn btn-small btn-outline" data-action="edit" data-id="${w.id}">✏️ Editar</button>
+                            <button class="btn btn-small btn-danger" data-action="delete" data-id="${w.id}">🗑️ Eliminar</button>
+                        </div>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderPagination(meta){
+            const c = document.getElementById('pagination');
+            c.innerHTML = '';
+            const left = document.createElement('div');
+            left.innerHTML = `<strong>Total:</strong> ${meta.total} | Página ${meta.page} de ${meta.total_pages}`;
+            const right = document.createElement('div');
+            right.style.display = 'flex'; right.style.gap = '8px';
+            if (meta.page > 1){
+                const prev = document.createElement('button'); prev.className='btn btn-small btn-outline'; prev.textContent='← Anterior'; prev.onclick=()=>{ state.page -= 1; fetchList(); };
+                right.appendChild(prev);
+            }
+            if (meta.page < meta.total_pages){
+                const next = document.createElement('button'); next.className='btn btn-small btn-outline'; next.textContent='Siguiente →'; next.onclick=()=>{ state.page += 1; fetchList(); };
+                right.appendChild(next);
+            }
+            c.appendChild(left); c.appendChild(right);
+        }
+
+        function attachEvents(){
+            // Sort links
+            document.querySelectorAll('th.sortable a').forEach(a => {
+                a.addEventListener('click', (e)=>{
+                    e.preventDefault();
+                    const s = a.getAttribute('data-sort');
+                    if (state.sort === s){ state.dir = state.dir === 'asc' ? 'desc' : 'asc'; } else { state.sort = s; state.dir = 'asc'; }
+                    state.page = 1; fetchList();
+                });
+            });
+            // Search
+            document.getElementById('searchForm').addEventListener('submit', (e)=>{
+                e.preventDefault();
+                state.q = document.getElementById('searchQ').value.trim();
+                state.page = 1; fetchList();
+            });
+            // Delegated actions (edit/delete)
+            document.getElementById('workersBody').addEventListener('click', async (e)=>{
+                const btn = e.target.closest('button'); if (!btn) return;
+                const act = btn.getAttribute('data-action'); const id = btn.getAttribute('data-id');
+                if (act === 'edit') {
+                    // load data by id (optional) or reuse row; we'll query API
+                    const res = await fetch('api/workers.php?action=get&id=' + id); const j = await res.json();
+                    if (j.ok){ editWorker({ id: j.data.id, first_name: j.data.first_name, last_name: j.data.last_name, dni: j.data.dni, email: j.data.email, cvu_alias: j.data.cvu_alias, age: j.data.age, work_place: j.data.work_place, address: j.data.address_url ? j.data.address_url : (j.data.address_text||'') }); }
+                } else if (act === 'delete') {
+                    if (!confirm('¿Eliminar este trabajador?')) return;
+                    const form = new FormData(); form.append('action','delete'); form.append('id', id); form.append('csrf_token', csrfToken);
+                    const res = await fetch('api/workers.php', { method:'POST', body: form, credentials:'same-origin' }); const j = await res.json();
+                    if (j.ok) { showFlash('Trabajador eliminado'); fetchList(); } else { showFlash(j.error||'Error al eliminar', 'error'); }
+                }
+            });
+            // Create
+            document.getElementById('createForm').addEventListener('submit', async (e)=>{
+                e.preventDefault(); const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
+                const res = await fetch('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' }); const j = await res.json();
+                if (j.ok){ closeModal('createModal'); showFlash('Trabajador creado'); fetchList(); e.target.reset(); }
+                else { showFlash(j.error||'Hay errores en el formulario', 'error'); }
+            });
+            // Update
+            document.getElementById('editForm').addEventListener('submit', async (e)=>{
+                e.preventDefault(); const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
+                const res = await fetch('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' }); const j = await res.json();
+                if (j.ok){ closeModal('editModal'); showFlash('Trabajador actualizado'); fetchList(); }
+                else { showFlash(j.error||'Hay errores en el formulario', 'error'); }
+            });
+        }
+
+        function escapeHtml(str){
+            return String(str).replace(/[&<>"]g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        }
+
+        document.addEventListener('DOMContentLoaded', ()=>{ attachEvents(); fetchList(); });
+    </script>
     <?php $conn->close(); ?>
 </body>
 </html>

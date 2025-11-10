@@ -32,6 +32,7 @@
 - ✅ Validaciones en frontend y backend
 - ✅ Dirección como texto o URL de Google Maps (extrae lat/lng si corresponde)
 - ✅ Auditoría: creado/actualizado por y fechas
+- ✅ API AJAX JSON: `admin/api/workers.php` (list/get/create/update/delete)
 
 ---
 
