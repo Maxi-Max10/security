@@ -25,6 +25,14 @@
 - ✅ Ver últimos registros e intentos de login
 - ✅ Gráficos de éxito/fallos de login
 
+### 4. **Gestión de Trabajadores (Nuevo)**
+- ✅ Nueva sección en Admin: `admin/workers.php`
+- ✅ Listado tipo grid con paginación, ordenamiento y búsqueda
+- ✅ Crear, editar y eliminar trabajadores (solo admin)
+- ✅ Validaciones en frontend y backend
+- ✅ Dirección como texto o URL de Google Maps (extrae lat/lng si corresponde)
+- ✅ Auditoría: creado/actualizado por y fechas
+
 ---
 
 ## 📋 PASOS PARA ACTUALIZAR EN HOSTINGER:
@@ -93,6 +101,9 @@ Archivos actualizados:
 - includes/functions.php
 - database/schema.sql
 - database/hostinger-import.sql
+ - admin/dashboard.php (enlaces)
+ - admin/workers.php (nuevo)
+ - database/update_add_workers.sql (script nuevo)
 ```
 
 ---

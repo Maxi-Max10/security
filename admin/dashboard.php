@@ -53,6 +53,7 @@ $user = get_user_data();
                 <div class="nav-right">
                     <span class="user-info"><?php echo htmlspecialchars($user['username']); ?></span>
                     <a href="users.php" class="btn btn-small btn-outline">Gestionar Usuarios</a>
+                    <a href="workers.php" class="btn btn-small btn-outline">Trabajadores</a>
                     <a href="../dashboard.php" class="btn btn-small">Mi Perfil</a>
                     <a href="../logout.php" class="btn btn-small btn-secondary">Cerrar Sesión</a>
                 </div>
