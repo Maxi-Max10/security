@@ -43,43 +43,44 @@ $recent_attempts = $conn->query("SELECT la.*, u.username FROM login_attempts la 
 
 $user = get_user_data();
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - <?php echo SITE_NAME; ?></title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
-    <script defer src="../assets/js/admin.js"></script>
-</head>
-<body>
+<?php $page_title = 'Dashboard'; include __DIR__.'/partials/head.php'; ?>
   <div class="admin-layout">
     <?php include __DIR__.'/partials/sidebar.php'; ?>
     <?php include __DIR__.'/partials/header.php'; ?>
-    <main class="content">
+    <main class="content container-fluid py-4">
       <?php display_flash_message(); ?>
 
-      <div class="grid kpis">
-        <div class="card"><h4>Usuarios</h4><div class="kpi"><?php echo $total_users; ?></div><div class="meta">Registrados</div></div>
-        <div class="card"><h4>Activos</h4><div class="kpi"><?php echo $active_users; ?></div><div class="meta">Usuarios activos</div></div>
-        <div class="card"><h4>Trabajadores</h4><div class="kpi"><?php echo $total_workers; ?></div><div class="meta">Total registrados</div></div>
-        <div class="card"><h4>Hoy</h4><div class="kpi"><?php echo $today_users; ?></div><div class="meta">Registros hoy</div></div>
-        <div class="card"><h4>Intentos</h4><div class="kpi"><?php echo $total_attempts; ?></div><div class="meta">Logins totales</div></div>
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+          <div class="card shadow-sm h-100"><div class="card-body"><h6 class="text-muted">Usuarios</h6><h3 class="fw-bold mb-0"><?php echo $total_users; ?></h3><span class="badge badge-soft">Registrados</span></div></div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card shadow-sm h-100"><div class="card-body"><h6 class="text-muted">Activos</h6><h3 class="fw-bold mb-0"><?php echo $active_users; ?></h3><span class="badge bg-success-subtle text-success">Activos</span></div></div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card shadow-sm h-100"><div class="card-body"><h6 class="text-muted">Trabajadores</h6><h3 class="fw-bold mb-0"><?php echo $total_workers; ?></h3><span class="badge bg-primary-subtle text-primary">Total</span></div></div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card shadow-sm h-100"><div class="card-body"><h6 class="text-muted">Intentos</h6><h3 class="fw-bold mb-0"><?php echo $total_attempts; ?></h3><span class="badge bg-info-subtle text-info">Logins</span></div></div>
+        </div>
       </div>
 
-      <section class="section">
-        <h3>Accesos rápidos</h3>
-        <div class="grid">
-          <div class="card" style="grid-column: span 4"><h4>👷 Trabajadores</h4><p class="meta">Gestiona altas, bajas y ubicaciones</p><p><a class="btn primary" href="workers.php">Abrir</a></p></div>
-          <div class="card" style="grid-column: span 4"><h4>👥 Usuarios</h4><p class="meta">Permisos y estados</p><p><a class="btn" href="users.php">Abrir</a></p></div>
-          <div class="card" style="grid-column: span 4"><h4>📑 Reportes</h4><p class="meta">Indicadores y descargas</p><p><a class="btn" href="#">Próximamente</a></p></div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card h-100"><div class="card-body"><h5 class="card-title">👷 Trabajadores</h5><p class="text-muted small">Gestiona altas, bajas y ubicaciones</p><a class="btn btn-primary btn-sm" href="workers.php">Abrir</a></div></div>
         </div>
-      </section>
+        <div class="col-md-4">
+          <div class="card h-100"><div class="card-body"><h5 class="card-title">👥 Usuarios</h5><p class="text-muted small">Permisos y estados</p><a class="btn btn-outline-primary btn-sm" href="users.php">Abrir</a></div></div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100"><div class="card-body"><h5 class="card-title">📑 Reportes</h5><p class="text-muted small">Indicadores y descargas</p><button class="btn btn-outline-secondary btn-sm" disabled>Próximamente</button></div></div>
+        </div>
+      </div>
 
-      <section class="section">
-        <h3>Usuarios recientes</h3>
-        <div class="table-wrap">
-          <table class="table">
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center"><h6 class="mb-0">Usuarios recientes</h6><span class="text-muted small">Últimos 10</span></div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
             <thead><tr><th>ID</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Registro</th><th>Estado</th></tr></thead>
             <tbody>
               <?php while ($usr = $recent_users->fetch_assoc()): ?>
@@ -95,12 +96,13 @@ $user = get_user_data();
             </tbody>
           </table>
         </div>
-      </section>
+        </div>
+      </div>
 
-      <section class="section">
-        <h3>Últimos intentos de login</h3>
-        <div class="table-wrap">
-          <table class="table">
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center"><h6 class="mb-0">Últimos intentos de login</h6><span class="text-muted small">Historial</span></div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
             <thead><tr><th>Usuario</th><th>Email</th><th>IP</th><th>Fecha</th><th>Resultado</th></tr></thead>
             <tbody>
               <?php while ($attempt = $recent_attempts->fetch_assoc()): ?>
@@ -115,20 +117,25 @@ $user = get_user_data();
             </tbody>
           </table>
         </div>
-      </section>
+        </div>
+      </div>
 
-      <section class="grid" style="margin-top:16px">
-        <div class="card" style="grid-column: span 6">
-          <h4>Tasa de éxito</h4>
-          <div class="kpi"><?php echo $total_attempts > 0 ? round(($success_attempts / $total_attempts) * 100) : 0; ?>%</div>
-          <div class="meta">Éxito vs total</div>
+      <div class="row g-3 mb-5">
+        <div class="col-md-6">
+          <div class="card h-100"><div class="card-body">
+            <h6 class="text-muted">Tasa de éxito</h6>
+            <div class="display-6 fw-bold mb-1"><?php echo $total_attempts > 0 ? round(($success_attempts / $total_attempts) * 100) : 0; ?>%</div>
+            <span class="badge bg-success-subtle text-success">Éxito vs total</span>
+          </div></div>
         </div>
-        <div class="card" style="grid-column: span 6">
-          <h4>Fallidos</h4>
-          <div class="kpi"><?php echo $failed_attempts; ?></div>
-          <div class="meta">Últimos registros</div>
+        <div class="col-md-6">
+          <div class="card h-100"><div class="card-body">
+            <h6 class="text-muted">Fallidos</h6>
+            <div class="display-6 fw-bold mb-1"><?php echo $failed_attempts; ?></div>
+            <span class="badge bg-danger-subtle text-danger">Intentos fallidos</span>
+          </div></div>
         </div>
-      </section>
+      </div>
     </main>
   </div>
   <?php $conn->close(); ?>

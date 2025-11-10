@@ -110,7 +110,7 @@ $form_old = [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trabajadores - Panel Admin</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
         .toolbar { display:flex; gap:12px; justify-content: space-between; align-items:center; }
         .search-box { display:flex; gap:8px; }
@@ -148,27 +148,16 @@ $form_old = [];
     </script>
 </head>
 <body>
-    <div class="navbar">
-        <div class="container">
-            <div class="nav-content">
-                <h2>Trabajadores</h2>
-                <div class="nav-right">
-                    <span class="user-info"><?php echo htmlspecialchars($current_user['username']); ?></span>
-                    <a href="dashboard.php" class="btn btn-small">Dashboard</a>
-                    <a href="users.php" class="btn btn-small btn-outline">Usuarios</a>
-                    <a href="../logout.php" class="btn btn-small btn-secondary">Cerrar Sesión</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="dashboard-box" style="max-width:1200px;">
-            <h1>👷 Gestión de Trabajadores</h1>
+  <div class="admin-layout">
+    <?php include __DIR__.'/partials/sidebar.php'; ?>
+    <?php include __DIR__.'/partials/header.php'; ?>
+    <main class="content">
+      <?php include __DIR__.'/partials/breadcrumb.php'; ?>
+      <h2 style="margin-top:0;">👷 Gestión de Trabajadores</h2>
 
             <div id="flash" style="display:none;"></div>
 
-            <div class="toolbar">
+            <div class="toolbar" style="margin-bottom:16px;">
                 <form class="search-box" id="searchForm">
                     <input type="text" id="searchQ" placeholder="Buscar por nombre, apellido o DNI">
                     <button class="btn btn-primary btn-small" type="submit">Buscar</button>
@@ -176,8 +165,8 @@ $form_old = [];
                 <button class="btn btn-success btn-small" onclick="openModal('createModal')">+ Nuevo trabajador</button>
             </div>
 
-            <div class="table-responsive">
-                <table>
+            <div class="table-responsive section" style="padding:0 0 8px 0;">
+                <table class="table" style="margin:0;">
                     <thead>
                         <tr>
                             <th class="sortable"><a href="#" data-sort="first_name">Nombre</a></th>
@@ -196,8 +185,8 @@ $form_old = [];
             </div>
 
             <!-- Paginación -->
-            <div id="pagination" style="display:flex; justify-content:space-between; align-items:center;"></div>
-        </div>
+                        <div id="pagination" style="display:flex; justify-content:space-between; align-items:center;margin-top:12px;"></div>
+        </main>
     </div>
 
     <!-- Modal Crear -->
@@ -252,8 +241,8 @@ $form_old = [];
                     <small id="createHint"></small>
                 </div>
                 <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('createModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn" onclick="closeModal('createModal')">Cancelar</button>
+                    <button type="submit" class="btn primary">Guardar</button>
                 </div>
             </form>
         </div>
@@ -304,8 +293,8 @@ $form_old = [];
                     <small id="editHint"></small>
                 </div>
                 <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                    <button type="button" class="btn" onclick="closeModal('editModal')">Cancelar</button>
+                    <button type="submit" class="btn primary">Actualizar</button>
                 </div>
             </form>
         </div>

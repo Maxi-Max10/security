@@ -1,11 +1,16 @@
 // Basic interactions for admin dashboard
 (function(){
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const modeKey = 'admin_theme_dark';
   const root = document.documentElement;
   function applyMode(){
     const dark = localStorage.getItem(modeKey) === 'true';
-    root.classList.toggle('dark', dark);
+    root.classList.remove('dark');
+    root.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+    if (dark) root.classList.add('dark');
+  }
+  if (localStorage.getItem(modeKey) === null) {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    localStorage.setItem(modeKey, prefersDark ? 'true' : 'false');
   }
   applyMode();
   document.addEventListener('click', e => {

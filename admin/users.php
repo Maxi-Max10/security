@@ -80,81 +80,27 @@ $csrf_token = generate_csrf_token();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestionar Usuarios - Panel Admin</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .action-buttons button {
-            padding: 6px 12px;
-            font-size: 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .btn-toggle {
-            background: var(--warning-color);
-            color: white;
-        }
-        .btn-toggle:hover {
-            background: #d97706;
-        }
-        .btn-delete {
-            background: var(--error-color);
-            color: white;
-        }
-        .btn-delete:hover {
-            background: #dc2626;
-        }
-        .btn-promote {
-            background: var(--success-color);
-            color: white;
-        }
-        .btn-promote:hover {
-            background: #059669;
-        }
-        .btn-demote {
-            background: var(--info-color);
-            color: white;
-        }
-        .btn-demote:hover {
-            background: #2563eb;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
+        .action-buttons { display:flex; gap:8px; flex-wrap:wrap; }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="container">
-            <div class="nav-content">
-                <h2>Gestionar Usuarios</h2>
-                <div class="nav-right">
-                    <span class="user-info"><?php echo htmlspecialchars($current_user['username']); ?></span>
-                    <a href="dashboard.php" class="btn btn-small">Dashboard</a>
-                    <a href="../logout.php" class="btn btn-small btn-secondary">Cerrar Sesión</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="container">
-        <div class="dashboard-box">
-            <h1>👥 Gestión de Usuarios</h1>
-            
-            <?php if ($message): ?>
-                <div class="alert alert-<?php echo $message_type; ?>">
-                    <?php echo $message; ?>
-                </div>
-            <?php endif; ?>
-            
-            <div class="table-responsive">
-                <table>
+  <div class="admin-layout">
+    <?php include __DIR__.'/partials/sidebar.php'; ?>
+    <?php include __DIR__.'/partials/header.php'; ?>
+    <main class="content">
+      <?php include __DIR__.'/partials/breadcrumb.php'; ?>
+      <h2 style="margin-top:0;">👥 Gestión de Usuarios</h2>
+
+      <?php if ($message): ?>
+          <div class="alert alert-<?php echo $message_type; ?>">
+              <?php echo $message; ?>
+          </div>
+      <?php endif; ?>
+
+      <div class="table-responsive section" style="padding:0;">
+          <table class="table" style="margin:0;">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -193,35 +139,32 @@ $csrf_token = generate_csrf_token();
                                         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                         <input type="hidden" name="action" value="toggle_status">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                        <button type="submit" class="btn-toggle" onclick="return confirm('¿Cambiar estado del usuario?')">
+                                        <button type="submit" class="btn small" onclick="return confirm('¿Cambiar estado del usuario?')">
                                             <?php echo $user['is_active'] ? '🔒 Desactivar' : '🔓 Activar'; ?>
                                         </button>
                                     </form>
-                                    
                                     <!-- Cambiar Rol -->
                                     <form method="POST" style="display: inline;">
                                         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                         <input type="hidden" name="action" value="change_role">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                         <input type="hidden" name="role" value="<?php echo $user['role'] === 'admin' ? 'user' : 'admin'; ?>">
-                                        <button type="submit" class="<?php echo $user['role'] === 'admin' ? 'btn-demote' : 'btn-promote'; ?>" 
-                                                onclick="return confirm('¿Cambiar rol del usuario?')">
+                                        <button type="submit" class="btn small" onclick="return confirm('¿Cambiar rol del usuario?')">
                                             <?php echo $user['role'] === 'admin' ? '👤 Hacer Usuario' : '⭐ Hacer Admin'; ?>
                                         </button>
                                     </form>
-                                    
                                     <!-- Eliminar -->
                                     <form method="POST" style="display: inline;">
                                         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                        <button type="submit" class="btn-delete" onclick="return confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')">
+                                        <button type="submit" class="btn small danger" onclick="return confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')">
                                             🗑️ Eliminar
                                         </button>
                                     </form>
                                 </div>
                                 <?php else: ?>
-                                <span style="color: var(--gray); font-size: 12px;">Tu cuenta</span>
+                                <span style="color: var(--text-muted); font-size: 12px;">Tu cuenta</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -235,9 +178,8 @@ $csrf_token = generate_csrf_token();
                 <p>Desde aquí puedes gestionar todos los usuarios del sistema. Puedes activar/desactivar cuentas, cambiar roles entre usuario y administrador, o eliminar usuarios si es necesario.</p>
                 <p style="margin-top: 10px;"><strong>Nota:</strong> No puedes modificar tu propia cuenta desde esta sección por seguridad.</p>
             </div>
-        </div>
+        </main>
     </div>
-    
     <?php $conn->close(); ?>
 </body>
 </html>
