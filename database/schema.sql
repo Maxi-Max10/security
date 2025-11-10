@@ -1,7 +1,17 @@
--- Crear base de datos
-CREATE DATABASE IF NOT EXISTS login_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- =====================================================
+-- SCRIPT DE IMPORTACIÓN PARA HOSTINGER
+-- Base de datos: u404968876_security
+-- =====================================================
+-- INSTRUCCIONES:
+-- 1. Accede a phpMyAdmin en Hostinger
+-- 2. Selecciona la base de datos: u404968876_security
+-- 3. Ve a la pestaña "Importar"
+-- 4. Selecciona este archivo (schema.sql)
+-- 5. Haz clic en "Continuar"
+-- =====================================================
 
-USE login_system;
+-- NO crear base de datos (ya existe en Hostinger)
+-- La base de datos ya fue creada: u404968876_security
 
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS users (
