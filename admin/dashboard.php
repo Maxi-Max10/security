@@ -23,6 +23,12 @@ $today_users = $conn->query("SELECT COUNT(*) as total FROM users WHERE DATE(crea
 // Total de intentos de login
 $total_attempts = $conn->query("SELECT COUNT(*) as total FROM login_attempts")->fetch_assoc()['total'];
 
+// Total de trabajadores
+$total_workers = 0;
+if ($conn->query("SHOW TABLES LIKE 'workers'")->num_rows === 1) {
+  $total_workers = $conn->query("SELECT COUNT(*) as total FROM workers")->fetch_assoc()['total'];
+}
+
 // Intentos exitosos
 $success_attempts = $conn->query("SELECT COUNT(*) as total FROM login_attempts WHERE success = 1")->fetch_assoc()['total'];
 
@@ -56,6 +62,7 @@ $user = get_user_data();
       <div class="grid kpis">
         <div class="card"><h4>Usuarios</h4><div class="kpi"><?php echo $total_users; ?></div><div class="meta">Registrados</div></div>
         <div class="card"><h4>Activos</h4><div class="kpi"><?php echo $active_users; ?></div><div class="meta">Usuarios activos</div></div>
+        <div class="card"><h4>Trabajadores</h4><div class="kpi"><?php echo $total_workers; ?></div><div class="meta">Total registrados</div></div>
         <div class="card"><h4>Hoy</h4><div class="kpi"><?php echo $today_users; ?></div><div class="meta">Registros hoy</div></div>
         <div class="card"><h4>Intentos</h4><div class="kpi"><?php echo $total_attempts; ?></div><div class="meta">Logins totales</div></div>
       </div>
