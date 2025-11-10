@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conn = getDBConnection();
             
             // Buscar usuario
-            $stmt = $conn->prepare("SELECT id, username, email, password, is_active FROM users WHERE email = ?");
+            $stmt = $conn->prepare("SELECT id, username, email, password, role, is_active FROM users WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['email'] = $user['email'];
+                    $_SESSION['user_role'] = $user['role'];
                     
                     // Actualizar último login
                     $update_stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
@@ -58,7 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->close();
                     $conn->close();
                     
-                    redirect('dashboard.php', '¡Bienvenido de nuevo!', 'success');
+                    // Redirigir según el rol
+                    if ($user['role'] === 'admin') {
+                        redirect('admin/dashboard.php', '¡Bienvenido, Administrador!', 'success');
+                    } else {
+                        redirect('dashboard.php', '¡Bienvenido de nuevo!', 'success');
+                    }
                 } else {
                     $error = 'Credenciales incorrectas.';
                     

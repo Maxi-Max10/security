@@ -28,6 +28,7 @@ CREATE TABLE `users` (
     `username` VARCHAR(50) NOT NULL,
     `email` VARCHAR(100) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
+    `role` ENUM('user', 'admin') NOT NULL DEFAULT 'user',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `last_login` TIMESTAMP NULL DEFAULT NULL,
@@ -36,7 +37,8 @@ CREATE TABLE `users` (
     UNIQUE KEY `username` (`username`),
     UNIQUE KEY `email` (`email`),
     KEY `idx_email` (`email`),
-    KEY `idx_username` (`username`)
+    KEY `idx_username` (`username`),
+    KEY `idx_role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================
@@ -57,12 +59,12 @@ CREATE TABLE `login_attempts` (
 
 -- =====================================================
 -- DATOS DE PRUEBA
--- Usuario administrador de prueba
--- Email: admin@example.com
--- Password: Admin123
+-- Usuario administrador
+-- Username: admin
+-- Password: 12345
 -- =====================================================
-INSERT INTO `users` (`username`, `email`, `password`, `is_active`) VALUES 
-('admin', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
+INSERT INTO `users` (`username`, `email`, `password`, `role`, `is_active`) VALUES 
+('admin', 'admin@example.com', '$2y$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92IKe1B5BLLRlIJ/oVq7i', 'admin', 1);
 
 -- =====================================================
 -- Restaurar configuración

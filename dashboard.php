@@ -24,8 +24,11 @@ $user = get_current_user();
             <div class="nav-content">
                 <h2><?php echo SITE_NAME; ?></h2>
                 <div class="nav-right">
-                    <span class="user-info">Hola, <?php echo htmlspecialchars($user['username']); ?>!</span>
-                    <a href="logout.php" class="btn btn-small">Cerrar Sesión</a>
+                    <span class="user-info"><?php echo htmlspecialchars($user['username']); ?></span>
+                    <?php if (is_admin()): ?>
+                        <a href="admin/dashboard.php" class="btn btn-small btn-primary">Panel Admin</a>
+                    <?php endif; ?>
+                    <a href="logout.php" class="btn btn-small btn-secondary">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
@@ -35,10 +38,10 @@ $user = get_current_user();
         <?php display_flash_message(); ?>
         
         <div class="dashboard-box">
-            <h1>Panel de Control</h1>
+            <h1>🎯 Panel de Control</h1>
             
             <div class="user-profile">
-                <h2>Información de la Cuenta</h2>
+                <h2>👤 Información de la Cuenta</h2>
                 <div class="info-grid">
                     <div class="info-item">
                         <strong>Usuario:</strong>
@@ -49,6 +52,12 @@ $user = get_current_user();
                         <span><?php echo htmlspecialchars($user['email']); ?></span>
                     </div>
                     <div class="info-item">
+                        <strong>Rol:</strong>
+                        <span class="badge badge-<?php echo $user['role']; ?>">
+                            <?php echo strtoupper($user['role']); ?>
+                        </span>
+                    </div>
+                    <div class="info-item">
                         <strong>Miembro desde:</strong>
                         <span><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></span>
                     </div>
@@ -56,8 +65,16 @@ $user = get_current_user();
             </div>
             
             <div class="welcome-message">
-                <h3>¡Bienvenido a tu panel!</h3>
+                <h3>✨ ¡Bienvenido a tu panel!</h3>
                 <p>Has iniciado sesión correctamente. Desde aquí puedes gestionar tu cuenta y acceder a las funcionalidades del sistema.</p>
+                <?php if (is_admin()): ?>
+                <p style="margin-top: 15px;">
+                    <strong>🔐 Acceso Administrativo:</strong> Como administrador, tienes acceso al panel de control avanzado donde puedes gestionar usuarios, ver estadísticas y monitorear la actividad del sistema.
+                </p>
+                <div style="margin-top: 20px;">
+                    <a href="admin/dashboard.php" class="btn btn-primary">Ir al Panel de Administración →</a>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

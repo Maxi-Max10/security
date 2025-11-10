@@ -116,7 +116,7 @@ function get_current_user() {
     $conn = getDBConnection();
     
     $user_id = $_SESSION['user_id'];
-    $stmt = $conn->prepare("SELECT id, username, email, created_at FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT id, username, email, role, created_at FROM users WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -126,5 +126,24 @@ function get_current_user() {
     $conn->close();
     
     return $user;
+}
+
+/**
+ * Verificar si el usuario es administrador
+ */
+function is_admin() {
+    if (!is_logged_in()) {
+        return false;
+    }
+    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+}
+
+/**
+ * Requerir rol de administrador
+ */
+function require_admin() {
+    if (!is_admin()) {
+        redirect('dashboard.php', 'No tienes permisos para acceder a esta sección.', 'error');
+    }
 }
 ?>
