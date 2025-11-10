@@ -105,9 +105,9 @@ function require_login() {
 }
 
 /**
- * Obtener usuario actual
+ * Obtener información del usuario actual
  */
-function get_current_user() {
+function get_user_data() {
     if (!is_logged_in()) {
         return null;
     }

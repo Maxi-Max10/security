@@ -8,7 +8,7 @@ require_once 'includes/functions.php';
 require_login();
 
 // Obtener información del usuario
-$user = get_current_user();
+$user = get_user_data();
 ?>
 <!DOCTYPE html>
 <html lang="es">

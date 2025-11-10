@@ -35,7 +35,7 @@ $recent_users = $conn->query("SELECT id, username, email, role, created_at, is_a
 // Últimos intentos de login
 $recent_attempts = $conn->query("SELECT la.*, u.username FROM login_attempts la LEFT JOIN users u ON la.email = u.email ORDER BY la.attempt_time DESC LIMIT 10");
 
-$user = get_current_user();
+$user = get_user_data();
 ?>
 <!DOCTYPE html>
 <html lang="es">

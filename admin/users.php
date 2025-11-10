@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Obtener todos los usuarios
 $users = $conn->query("SELECT id, username, email, role, created_at, last_login, is_active FROM users ORDER BY created_at DESC");
 
-$current_user = get_current_user();
+$current_user = get_user_data();
 $csrf_token = generate_csrf_token();
 ?>
 <!DOCTYPE html>
