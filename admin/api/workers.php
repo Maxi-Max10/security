@@ -5,6 +5,8 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 @ini_set('display_errors', '0');
 @ini_set('html_errors', '0');
+// Flag to let DB helper emit JSON on connection failure
+if (!defined('API_MODE')) define('API_MODE', true);
 require_once '../../config/config.php';
 require_once '../../config/database.php';
 require_once '../../includes/functions.php';

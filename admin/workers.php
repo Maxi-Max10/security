@@ -537,7 +537,7 @@ $form_old = [];
                 }
                 const text = await res.text();
                 console.error('Respuesta no-JSON', {url, status: res.status, text});
-                return { ok:false, error: extractHtmlError(text) || 'Respuesta inválida del servidor'};
+                return { ok:false, error: extractHtmlError(text) || ('HTTP '+res.status)};
             } catch (err) {
                 console.error('Fetch error', err);
                 return { ok:false, error: 'No se pudo conectar con el servidor'};
