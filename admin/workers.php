@@ -547,16 +547,15 @@ $form_old = [];
             try {
                 resolved = new URL(url, window.location.href).toString();
                 const res = await fetch(resolved, options);
-                const ct = res.headers.get('content-type') || '';
-                if (ct.includes('application/json')) {
-                    return await res.json();
+                const raw = await res.text();
+                try {
+                    return JSON.parse(raw);
+                } catch (parseErr) {
+                    console.error('Respuesta no-JSON', { url: resolved, status: res.status, raw });
+                    return { ok:false, error: extractHtmlError(raw) || raw.slice(0,200) || ('HTTP '+res.status) };
                 }
-                const text = await res.text();
-                console.error('Respuesta no-JSON', {url: resolved, status: res.status, text});
-                return { ok:false, error: extractHtmlError(text) || ('HTTP '+res.status) };
             } catch (err) {
                 console.error('Fetch error', {url, resolved, err});
-                // Añadimos detalle del error para diagnóstico (por ej. TypeError: Failed to fetch)
                 return { ok:false, error: 'No se pudo conectar con el servidor: ' + (err.message || 'Error de red') };
             }
         }

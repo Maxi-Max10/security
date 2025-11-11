@@ -5,8 +5,24 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 @ini_set('display_errors', '0');
 @ini_set('html_errors', '0');
-// Flag to let DB helper emit JSON on connection failure
+@error_reporting(0);
+// Iniciar buffer y capturar errores fatales para devolver JSON siempre
 if (!defined('API_MODE')) define('API_MODE', true);
+if (!defined('APP_API_FATAL_GUARD')) define('APP_API_FATAL_GUARD', true);
+ob_start();
+register_shutdown_function(function(){
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {
+        // Limpiar cualquier salida previa (HTML de error) y responder JSON
+        while (ob_get_level() > 0) { @ob_end_clean(); }
+        if (!headers_sent()) { @header('Content-Type: application/json; charset=utf-8'); http_response_code(500); }
+        echo json_encode(['ok'=>false,'error'=>'Error interno del servidor']);
+    } else {
+        // Volcar salida normal si no hubo fatal error
+        @ob_end_flush();
+    }
+});
+// Flag to let DB helper emit JSON on connection failure
 require_once '../../config/config.php';
 require_once '../../config/database.php';
 require_once '../../includes/functions.php';

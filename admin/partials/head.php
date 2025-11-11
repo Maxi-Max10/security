@@ -8,6 +8,8 @@ if (!isset($page_title)) { $page_title = 'Panel Admin'; }
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?php echo htmlspecialchars($page_title); ?> - <?php echo SITE_NAME; ?></title>
+  <!-- Prevent 404 favicon by using an empty data URL -->
+  <link rel="icon" href="data:,">
   <!-- Bootstrap 5.3 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
