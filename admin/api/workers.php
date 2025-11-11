@@ -1,7 +1,10 @@
 <?php
 // API JSON para gestión de trabajadores
 session_start();
+// For API responses, ensure clean JSON: no HTML error output
 header('Content-Type: application/json; charset=utf-8');
+@ini_set('display_errors', '0');
+@ini_set('html_errors', '0');
 require_once '../../config/config.php';
 require_once '../../config/database.php';
 require_once '../../includes/functions.php';
