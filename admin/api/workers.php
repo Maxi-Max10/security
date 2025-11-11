@@ -180,9 +180,37 @@ try {
             $c = $val['clean'];
             $age = $c['age'] !== '' ? intval($c['age']) : null;
             $uid = ensure_user_id_or_null($conn, $_SESSION['user_id'] ?? 0);
+            $first_name = $c['first_name'];
+            $last_name = $c['last_name'];
+            $dni = $c['dni'];
+            $email = $c['email'];
+            $cvu_alias = $c['cvu_alias'] !== '' ? $c['cvu_alias'] : null;
+            $work_place = $c['work_place'];
+            $address_text = $c['address_text'];
+            $address_url = $c['address_url'];
+            $latitude = $c['lat'] !== null ? floatval($c['lat']) : null;
+            $longitude = $c['lng'] !== null ? floatval($c['lng']) : null;
+            $created_by = $uid;
+            $updated_by = $uid;
+
             $sql = 'INSERT INTO workers (first_name,last_name,dni,email,cvu_alias,age,work_place,address_text,address_url,latitude,longitude,created_by,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?, ?)';
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param('sssssisssddii', $c['first_name'],$c['last_name'],$c['dni'],$c['email'],$c['cvu_alias']!==''?$c['cvu_alias']:null,$age,$c['work_place'],$c['address_text'],$c['address_url'],$c['lat'],$c['lng'],$uid,$uid);
+            $stmt->bind_param(
+                'sssssisssddii',
+                $first_name,
+                $last_name,
+                $dni,
+                $email,
+                $cvu_alias,
+                $age,
+                $work_place,
+                $address_text,
+                $address_url,
+                $latitude,
+                $longitude,
+                $created_by,
+                $updated_by
+            );
             if ($stmt->execute()) { echo json_encode(['ok'=>true,'id'=>$stmt->insert_id]); } else { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'Error al crear','db_error'=>$stmt->error?:$conn->error]); }
             $stmt->close();
         }
@@ -193,10 +221,39 @@ try {
         $val = api_validate_worker($_POST,true,$id,$conn);
         if ($val['errors']) { http_response_code(422); echo json_encode(['ok'=>false,'errors'=>$val['errors']]); }
         else {
-            $c = $val['clean']; $age = $c['age'] !== '' ? intval($c['age']) : null; $uid = ensure_user_id_or_null($conn, $_SESSION['user_id'] ?? 0);
+            $c = $val['clean'];
+            $age = $c['age'] !== '' ? intval($c['age']) : null;
+            $uid = ensure_user_id_or_null($conn, $_SESSION['user_id'] ?? 0);
+            $first_name = $c['first_name'];
+            $last_name = $c['last_name'];
+            $dni = $c['dni'];
+            $email = $c['email'];
+            $cvu_alias = $c['cvu_alias'] !== '' ? $c['cvu_alias'] : null;
+            $work_place = $c['work_place'];
+            $address_text = $c['address_text'];
+            $address_url = $c['address_url'];
+            $latitude = $c['lat'] !== null ? floatval($c['lat']) : null;
+            $longitude = $c['lng'] !== null ? floatval($c['lng']) : null;
+            $updated_by = $uid;
+
             $sql = 'UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id=?';
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param('sssssisssddii',$c['first_name'],$c['last_name'],$c['dni'],$c['email'],$c['cvu_alias']!==''?$c['cvu_alias']:null,$age,$c['work_place'],$c['address_text'],$c['address_url'],$c['lat'],$c['lng'],$uid,$id);
+            $stmt->bind_param(
+                'sssssisssddii',
+                $first_name,
+                $last_name,
+                $dni,
+                $email,
+                $cvu_alias,
+                $age,
+                $work_place,
+                $address_text,
+                $address_url,
+                $latitude,
+                $longitude,
+                $updated_by,
+                $id
+            );
             if ($stmt->execute()) { echo json_encode(['ok'=>true]); } else { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'Error al actualizar','db_error'=>$stmt->error?:$conn->error]); }
             $stmt->close();
         }
