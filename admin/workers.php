@@ -222,7 +222,12 @@ $form_old = [];
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Contraseña *</label>
-                                    <input type="password" class="form-control" name="password" required minlength="8" autocomplete="new-password">
+                                    <div class="input-group password-toggle-group">
+                                        <input type="password" class="form-control" name="password" required minlength="8" autocomplete="new-password">
+                                        <button type="button" class="btn btn-outline-secondary" data-toggle="password" aria-label="Mostrar u ocultar contraseña">
+                                            <i class="bi bi-eye-slash"></i>
+                                        </button>
+                                    </div>
                                     <div class="form-text">Mínimo 8 caracteres</div>
                                     <div class="invalid-feedback"></div>
                                 </div>
@@ -294,7 +299,12 @@ $form_old = [];
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Contraseña</label>
-                                    <input type="password" class="form-control" name="password" minlength="8" autocomplete="new-password" placeholder="Dejar vacío para no cambiar">
+                                    <div class="input-group password-toggle-group">
+                                        <input type="password" class="form-control" name="password" minlength="8" autocomplete="new-password" placeholder="Dejar vacío para no cambiar">
+                                        <button type="button" class="btn btn-outline-secondary" data-toggle="password" aria-label="Mostrar u ocultar contraseña">
+                                            <i class="bi bi-eye-slash"></i>
+                                        </button>
+                                    </div>
                                     <div class="form-text">Deja en blanco para mantener la actual</div>
                                     <div class="invalid-feedback"></div>
                                 </div>
@@ -361,8 +371,14 @@ $form_old = [];
             const cm = document.getElementById('createModal');
             const em = document.getElementById('editModal');
             const dm = document.getElementById('deleteModal');
-                        if (cm) { createModal = new bootstrap.Modal(cm); }
-                        if (em) { editModal = new bootstrap.Modal(em); }
+                if (cm) {
+                    createModal = new bootstrap.Modal(cm);
+                    cm.addEventListener('hidden.bs.modal', ()=>{ resetPasswordVisibility(cm); });
+                }
+                if (em) {
+                    editModal = new bootstrap.Modal(em);
+                    em.addEventListener('hidden.bs.modal', ()=>{ resetPasswordVisibility(em); });
+                }
                         if (dm) {
                                 deleteModal = new bootstrap.Modal(dm);
                                 dm.addEventListener('hidden.bs.modal', ()=>{
@@ -374,6 +390,7 @@ $form_old = [];
                                 });
                         }
           }
+                    initPasswordToggles();
         });
         function openModal(id){
             if (id==='createModal' && createModal) { createModal.show(); return; }
@@ -384,6 +401,14 @@ $form_old = [];
             if (id==='createModal' && createModal) { createModal.hide(); return; }
             if (id==='editModal' && editModal) { editModal.hide(); return; }
             if (id==='deleteModal' && deleteModal) { deleteModal.hide(); }
+        }
+        function resetPasswordVisibility(container){
+            if (!container) return;
+            container.querySelectorAll('.password-toggle-group input').forEach(input => {
+                input.type = 'password';
+                const icon = input.closest('.password-toggle-group')?.querySelector('[data-toggle="password"] i');
+                if (icon) { icon.classList.remove('bi-eye'); icon.classList.add('bi-eye-slash'); }
+            });
         }
         function editWorker(worker){
             // Rellenar formulario de edición
@@ -613,6 +638,24 @@ $form_old = [];
         function clearFormErrors(form){
             form.querySelectorAll('.is-invalid').forEach(el=> el.classList.remove('is-invalid'));
             form.querySelectorAll('.invalid-feedback').forEach(el=> el.textContent='');
+        }
+        function initPasswordToggles(){
+            document.querySelectorAll('[data-toggle="password"]').forEach(btn => {
+                if (btn.dataset.bound === '1') return;
+                btn.dataset.bound = '1';
+                btn.addEventListener('click', ()=>{
+                    const input = btn.closest('.password-toggle-group')?.querySelector('input');
+                    if (!input) return;
+                    const icon = btn.querySelector('i');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        if (icon) { icon.classList.remove('bi-eye-slash'); icon.classList.add('bi-eye'); }
+                    } else {
+                        input.type = 'password';
+                        if (icon) { icon.classList.remove('bi-eye'); icon.classList.add('bi-eye-slash'); }
+                    }
+                });
+            });
         }
         function showFormErrors(form, errors){
             Object.entries(errors).forEach(([field, msg])=>{
