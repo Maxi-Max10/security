@@ -115,12 +115,45 @@ $form_old = [];
             <div id="flash" class="alert d-none" role="alert"></div>
 
             <div class="card mb-3">
-                <div class="card-body d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <form class="d-flex gap-2" id="searchForm">
-                        <input type="text" class="form-control form-control-sm" id="searchQ" placeholder="Buscar por nombre, apellido o DNI">
-                        <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-search"></i> Buscar</button>
-                    </form>
-                    <button class="btn btn-success btn-sm" onclick="openModal('createModal')"><i class="bi bi-plus-lg"></i> Nuevo trabajador</button>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                        <form class="d-flex gap-2" id="searchForm">
+                            <input type="text" class="form-control form-control-sm" id="searchQ" placeholder="Buscar por nombre, apellido o DNI">
+                            <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-search"></i> Buscar</button>
+                        </form>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse"><i class="bi bi-funnel"></i> Filtros</button>
+                            <button class="btn btn-success btn-sm" onclick="openModal('createModal')"><i class="bi bi-plus-lg"></i> Nuevo</button>
+                        </div>
+                    </div>
+                    <div class="collapse" id="filtersCollapse">
+                        <form id="filtersForm" class="border rounded p-3 bg-body-tertiary small">
+                            <div class="row g-3">
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label mb-1">Edad mín.</label>
+                                    <input type="number" min="16" max="100" class="form-control form-control-sm" id="age_min" placeholder="16">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label mb-1">Edad máx.</label>
+                                    <input type="number" min="16" max="100" class="form-control form-control-sm" id="age_max" placeholder="60">
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label mb-1">Lugar trabajo</label>
+                                    <input type="text" class="form-control form-control-sm" id="work_place_filter" placeholder="Ej: Planta">
+                                </div>
+                                <div class="col-12 col-md-2 d-flex align-items-end">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="has_geo">
+                                        <label class="form-check-label" for="has_geo">Con mapa</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex gap-2 justify-content-end">
+                                    <button type="button" id="btnClearFilters" class="btn btn-outline-secondary btn-sm">Limpiar</button>
+                                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-filter"></i> Aplicar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -130,7 +163,7 @@ $form_old = [];
                     <div class="small text-muted">Ordenar: clic en encabezados</div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover table-striped table-bordered align-middle mb-0">
                     <thead>
                         <tr>
                             <th class="sortable"><a href="#" data-sort="first_name">Nombre</a></th>
@@ -300,7 +333,7 @@ $form_old = [];
             else { hint.textContent = ''; }
         }
         const csrfToken = <?php echo json_encode($csrf_token); ?>;
-        let state = { page: 1, per_page: 10, sort: 'last_name', dir: 'asc', q: '' };
+    let state = { page: 1, per_page: 10, sort: 'last_name', dir: 'asc', q: '', age_min: '', age_max: '', work_place: '', has_geo: '' };
 
         function showFlash(text, type='success'){
             const box = document.getElementById('flash');
@@ -311,7 +344,12 @@ $form_old = [];
         }
 
         async function fetchList(){
-            const params = new URLSearchParams({ action:'list', page: state.page, limit: state.per_page, sort: state.sort, dir: state.dir, q: state.q });
+            const base = { action:'list', page: state.page, limit: state.per_page, sort: state.sort, dir: state.dir, q: state.q };
+            if (state.age_min) base.age_min = state.age_min;
+            if (state.age_max) base.age_max = state.age_max;
+            if (state.work_place) base.work_place = state.work_place;
+            if (state.has_geo) base.has_geo = state.has_geo;
+            const params = new URLSearchParams(base);
             const res = await fetch('api/workers.php?' + params.toString(), { credentials: 'same-origin' });
             const json = await res.json();
             if (!json.ok) { showFlash(json.error || 'Error al cargar', 'error'); return; }
@@ -322,26 +360,37 @@ $form_old = [];
         function renderTable(rows){
             const tbody = document.getElementById('workersBody');
             tbody.innerHTML = '';
+            if (!rows.length){
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="9" class="text-center text-muted py-4"><em>Sin resultados para los filtros aplicados.</em></td>';
+                tbody.appendChild(tr);
+                return;
+            }
             rows.forEach(w => {
                 const tr = document.createElement('tr');
-                const addr = w.address_url ? `<a href="${w.address_url}" target="_blank">Mapa</a>${(w.latitude && w.longitude)?` <small>(${w.latitude}, ${w.longitude})</small>`:''}` : (w.address_text||'');
+                const addr = w.address_url ? `<a href="${w.address_url}" target="_blank" class="text-decoration-none"><i class=\"bi bi-geo-alt\"></i> Mapa</a>${(w.latitude && w.longitude)?` <small class=\"text-muted\">(${w.latitude}, ${w.longitude})</small>`:''}` : (w.address_text||'');
+                const ageBadge = w.age ? `<span class=\"badge bg-secondary-subtle text-secondary\">${w.age}</span>` : '<span class=\"badge bg-light text-muted\">-</span>';
                 tr.innerHTML = `
                     <td>${escapeHtml(w.first_name||'')}</td>
                     <td>${escapeHtml(w.last_name||'')}</td>
                     <td>${escapeHtml(w.dni||'')}</td>
                     <td>${escapeHtml(w.email||'')}</td>
                     <td>${escapeHtml(w.cvu_alias||'')}</td>
-                    <td>${w.age??''}</td>
+                    <td>${ageBadge}</td>
                     <td>${escapeHtml(w.work_place||'')}</td>
                     <td>${addr}</td>
                     <td>
-                        <div class="grid-actions">
-                            <button class="btn btn-small btn-outline" data-action="edit" data-id="${w.id}">✏️ Editar</button>
-                            <button class="btn btn-small btn-danger" data-action="delete" data-id="${w.id}">🗑️ Eliminar</button>
+                        <div class=\"btn-group btn-group-sm\" role=\"group\">
+                            <button class=\"btn btn-outline-primary\" data-bs-toggle=\"tooltip\" title=\"Editar\" data-action=\"edit\" data-id=\"${w.id}\"><i class=\"bi bi-pencil\"></i></button>
+                            <button class=\"btn btn-outline-danger\" data-bs-toggle=\"tooltip\" title=\"Eliminar\" data-action=\"delete\" data-id=\"${w.id}\"><i class=\"bi bi-trash\"></i></button>
                         </div>
                     </td>`;
                 tbody.appendChild(tr);
             });
+            if (window.bootstrap){
+              const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+              tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+            }
         }
 
         function renderPagination(meta){
@@ -372,7 +421,24 @@ $form_old = [];
                 state.q = document.getElementById('searchQ').value.trim();
                 state.page = 1; fetchList();
             });
-            // Delegated actions (edit/delete)
+                        // Filters
+                        document.getElementById('filtersForm').addEventListener('submit', e => {
+                            e.preventDefault();
+                            state.age_min = document.getElementById('age_min').value.trim();
+                            state.age_max = document.getElementById('age_max').value.trim();
+                            state.work_place = document.getElementById('work_place_filter').value.trim();
+                            state.has_geo = document.getElementById('has_geo').checked ? '1' : '';
+                            state.page = 1;
+                            fetchList();
+                        });
+                        document.getElementById('btnClearFilters').addEventListener('click', () => {
+                            ['age_min','age_max','work_place_filter'].forEach(id => document.getElementById(id).value='');
+                            document.getElementById('has_geo').checked = false;
+                            state.age_min = state.age_max = state.work_place = state.has_geo = '';
+                            state.page = 1;
+                            fetchList();
+                        });
+                        // Delegated actions (edit/delete)
             document.getElementById('workersBody').addEventListener('click', async (e)=>{
                 const btn = e.target.closest('button'); if (!btn) return;
                 const act = btn.getAttribute('data-action'); const id = btn.getAttribute('data-id');

@@ -84,21 +84,40 @@ try {
         $allowed_sort = ['first_name','last_name','dni','email','age','work_place','created_at'];
         if (!in_array($sort, $allowed_sort)) { $sort = 'last_name'; }
 
-        $where = ''; $params = []; $types = '';
+        // Extra filters
+        $age_min = isset($_GET['age_min']) && $_GET['age_min'] !== '' ? intval($_GET['age_min']) : null;
+        $age_max = isset($_GET['age_max']) && $_GET['age_max'] !== '' ? intval($_GET['age_max']) : null;
+        $work_place_f = trim($_GET['work_place'] ?? '');
+        $has_geo = isset($_GET['has_geo']) && $_GET['has_geo'] == '1';
+
+        // WHERE builder
+        $whereParts = [];
+        $params = [];
+        $types = '';
         if ($q !== '') {
-            $where = 'WHERE (first_name LIKE ? OR last_name LIKE ? OR dni LIKE ?)';
-            $like = "%$q%"; $params = [$like,$like,$like]; $types = 'sss';
+            $whereParts[] = '(first_name LIKE ? OR last_name LIKE ? OR dni LIKE ?)';
+            $like = "%$q%"; $params[] = $like; $params[] = $like; $params[] = $like; $types .= 'sss';
         }
+        if (!is_null($age_min)) { $whereParts[] = '(age IS NOT NULL AND age >= ?)'; $params[] = $age_min; $types .= 'i'; }
+        if (!is_null($age_max)) { $whereParts[] = '(age IS NOT NULL AND age <= ?)'; $params[] = $age_max; $types .= 'i'; }
+        if ($work_place_f !== '') { $whereParts[] = 'work_place LIKE ?'; $params[] = "%$work_place_f%"; $types .= 's'; }
+        if ($has_geo) { $whereParts[] = '((latitude IS NOT NULL AND longitude IS NOT NULL) OR address_url IS NOT NULL)'; }
+        $whereSQL = count($whereParts) ? ('WHERE ' . implode(' AND ', $whereParts)) : '';
+
         // Total
-        if ($where) {
-            $stmt = $conn->prepare("SELECT COUNT(*) total FROM workers $where");
-            $stmt->bind_param($types, ...$params); $stmt->execute();
-            $total = $stmt->get_result()->fetch_assoc()['total']; $stmt->close();
-        } else { $total = $conn->query('SELECT COUNT(*) total FROM workers')->fetch_assoc()['total']; }
+        if ($whereSQL) {
+            $stmt = $conn->prepare("SELECT COUNT(*) total FROM workers $whereSQL");
+            if ($types !== '') { $stmt->bind_param($types, ...$params); }
+            $stmt->execute();
+            $total = $stmt->get_result()->fetch_assoc()['total'];
+            $stmt->close();
+        } else {
+            $total = $conn->query('SELECT COUNT(*) total FROM workers')->fetch_assoc()['total'];
+        }
 
         // Datos
-        if ($where) {
-            $sql = "SELECT * FROM workers $where ORDER BY $sort $dir LIMIT ? OFFSET ?";
+        if ($whereSQL) {
+            $sql = "SELECT * FROM workers $whereSQL ORDER BY $sort $dir LIMIT ? OFFSET ?";
             $stmt = $conn->prepare($sql);
             $types2 = $types . 'ii'; $params2 = array_merge($params, [$per_page,$offset]);
             $stmt->bind_param($types2, ...$params2);
