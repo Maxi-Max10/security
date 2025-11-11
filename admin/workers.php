@@ -366,7 +366,7 @@ $form_old = [];
             if (state.work_place) base.work_place = state.work_place;
             if (state.has_geo) base.has_geo = state.has_geo;
             const params = new URLSearchParams(base);
-            const json = await safeFetchJSON('api/workers.php?' + params.toString(), { credentials: 'same-origin' });
+            const json = await safeFetchJSON('./api/workers.php?' + params.toString(), { credentials: 'same-origin' });
             if (!json.ok) { showFlash(json.error || 'Error al cargar', 'error'); return; }
             renderTable(json.data);
             renderPagination(json);
@@ -460,12 +460,12 @@ $form_old = [];
                 const act = btn.getAttribute('data-action'); const id = btn.getAttribute('data-id');
                 if (act === 'edit') {
                     // load data by id (optional) or reuse row; we'll query API
-                    const j = await safeFetchJSON('api/workers.php?action=get&id=' + id);
+                    const j = await safeFetchJSON('./api/workers.php?action=get&id=' + id);
                     if (j.ok){ editWorker({ id: j.data.id, first_name: j.data.first_name, last_name: j.data.last_name, dni: j.data.dni, email: j.data.email, cvu_alias: j.data.cvu_alias, age: j.data.age, work_place: j.data.work_place, address: j.data.address_url ? j.data.address_url : (j.data.address_text||'') }); }
                 } else if (act === 'delete') {
                     if (!confirm('¿Eliminar este trabajador?')) return;
                     const form = new FormData(); form.append('action','delete'); form.append('id', id); form.append('csrf_token', csrfToken);
-                    const j = await safeFetchJSON('api/workers.php', { method:'POST', body: form, credentials:'same-origin' });
+                    const j = await safeFetchJSON('./api/workers.php', { method:'POST', body: form, credentials:'same-origin' });
                     if (j.ok) { showFlash('Trabajador eliminado'); fetchList(); } else { showFlash(j.error||'Error al eliminar', 'error'); }
                 }
             });
@@ -474,7 +474,7 @@ $form_old = [];
                 e.preventDefault();
                 clearFormErrors(e.target);
                 const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
-                const j = await safeFetchJSON('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' });
+                const j = await safeFetchJSON('./api/workers.php', { method:'POST', body: fd, credentials:'same-origin' });
                 if (j.ok){
                     console.info('Creado trabajador id=', j.id);
                     closeModal('createModal');
@@ -494,7 +494,7 @@ $form_old = [];
                 e.preventDefault();
                 clearFormErrors(e.target);
                 const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
-                const j = await safeFetchJSON('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' });
+                const j = await safeFetchJSON('./api/workers.php', { method:'POST', body: fd, credentials:'same-origin' });
                 if (j.ok){ closeModal('editModal'); showFlash('Trabajador actualizado'); fetchList(); }
                 else {
                     if (j.errors) showFormErrors(e.target, j.errors);
@@ -544,17 +544,19 @@ $form_old = [];
         }
         async function safeFetchJSON(url, options={}){
             try {
-                const res = await fetch(url, options);
+                const resolved = new URL(url, window.location.href).toString();
+                const res = await fetch(resolved, options);
                 const ct = res.headers.get('content-type') || '';
                 if (ct.includes('application/json')) {
                     return await res.json();
                 }
                 const text = await res.text();
-                console.error('Respuesta no-JSON', {url, status: res.status, text});
-                return { ok:false, error: extractHtmlError(text) || ('HTTP '+res.status)};
+                console.error('Respuesta no-JSON', {url: resolved, status: res.status, text});
+                return { ok:false, error: extractHtmlError(text) || ('HTTP '+res.status) };
             } catch (err) {
-                console.error('Fetch error', err);
-                return { ok:false, error: 'No se pudo conectar con el servidor'};
+                console.error('Fetch error', {url, resolved, err});
+                // Añadimos detalle del error para diagnóstico (por ej. TypeError: Failed to fetch)
+                return { ok:false, error: 'No se pudo conectar con el servidor: ' + (err.message || 'Error de red') };
             }
         }
         function extractHtmlError(html){
