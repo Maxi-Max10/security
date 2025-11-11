@@ -1,5 +1,15 @@
 # 🚀 GUÍA DE ACTUALIZACIÓN DEL SISTEMA
 
+## 🧱 Integración de Bootstrap (Nuevo)
+
+- Se añadió Bootstrap 5.3 (CSS/JS) y Bootstrap Icons al layout admin en `admin/partials/head.php`.
+- Se creó `assets/css/admin-custom.css` con overrides suaves (sidebar, badges, botones, helpers) respetando `data-bs-theme`.
+- Se refactorizaron los parciales `admin/partials/header.php` y `admin/partials/sidebar.php` a componentes Bootstrap.
+- `admin/dashboard.php` ahora usa cards, badges y tablas responsive.
+- `admin/users.php` migrado a tabla responsive con badges y grupos de botones.
+- `admin/workers.php` migrado a tabla responsive y modales Bootstrap con validación básica e integración AJAX existente.
+- El tema claro/oscuro persiste con `localStorage` y se aplica vía `data-bs-theme` desde `assets/js/admin.js`.
+
 ## ✨ Mejoras Implementadas:
 
 ### 1. **Diseño Profesional y Responsive**

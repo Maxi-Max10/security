@@ -74,33 +74,24 @@ $users = $conn->query("SELECT id, username, email, role, created_at, last_login,
 $current_user = get_user_data();
 $csrf_token = generate_csrf_token();
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionar Usuarios - Panel Admin</title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
-    <style>
-        .action-buttons { display:flex; gap:8px; flex-wrap:wrap; }
-    </style>
-</head>
-<body>
+<?php $page_title = 'Usuarios'; include __DIR__.'/partials/head.php'; ?>
   <div class="admin-layout">
     <?php include __DIR__.'/partials/sidebar.php'; ?>
     <?php include __DIR__.'/partials/header.php'; ?>
-    <main class="content">
+    <main class="content container-fluid py-4">
       <?php include __DIR__.'/partials/breadcrumb.php'; ?>
-      <h2 style="margin-top:0;">👥 Gestión de Usuarios</h2>
+      <h2 class="mt-0">👥 Gestión de Usuarios</h2>
 
       <?php if ($message): ?>
-          <div class="alert alert-<?php echo $message_type; ?>">
+          <div class="alert alert-<?php echo $message_type === 'success' ? 'success' : 'danger'; ?>">
               <?php echo $message; ?>
           </div>
       <?php endif; ?>
 
-      <div class="table-responsive section" style="padding:0;">
-          <table class="table" style="margin:0;">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center"><strong>Usuarios</strong><span class="small text-muted">Administración</span></div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -120,27 +111,31 @@ $csrf_token = generate_csrf_token();
                             <td><strong><?php echo htmlspecialchars($user['username']); ?></strong></td>
                             <td><?php echo htmlspecialchars($user['email']); ?></td>
                             <td>
-                                <span class="badge badge-<?php echo $user['role']; ?>">
-                                    <?php echo strtoupper($user['role']); ?>
-                                </span>
+                                <?php if ($user['role'] === 'admin'): ?>
+                                  <span class="badge bg-primary-subtle text-primary">ADMIN</span>
+                                <?php else: ?>
+                                  <span class="badge bg-secondary-subtle text-secondary">USER</span>
+                                <?php endif; ?>
                             </td>
                             <td><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></td>
                             <td><?php echo $user['last_login'] ? date('d/m/Y H:i', strtotime($user['last_login'])) : 'Nunca'; ?></td>
                             <td>
-                                <span class="badge badge-<?php echo $user['is_active'] ? 'active' : 'inactive'; ?>">
-                                    <?php echo $user['is_active'] ? 'ACTIVO' : 'INACTIVO'; ?>
-                                </span>
+                                <?php if ($user['is_active']): ?>
+                                  <span class="badge bg-success-subtle text-success">ACTIVO</span>
+                                <?php else: ?>
+                                  <span class="badge bg-danger-subtle text-danger">INACTIVO</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                <div class="action-buttons">
+                                <div class="btn-group btn-group-sm" role="group">
                                     <!-- Toggle Estado -->
                                     <form method="POST" style="display: inline;">
                                         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                         <input type="hidden" name="action" value="toggle_status">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                        <button type="submit" class="btn small" onclick="return confirm('¿Cambiar estado del usuario?')">
-                                            <?php echo $user['is_active'] ? '🔒 Desactivar' : '🔓 Activar'; ?>
+                                        <button type="submit" class="btn btn-outline-secondary" onclick="return confirm('¿Cambiar estado del usuario?')">
+                                            <?php echo $user['is_active'] ? 'Desactivar' : 'Activar'; ?>
                                         </button>
                                     </form>
                                     <!-- Cambiar Rol -->
@@ -149,8 +144,8 @@ $csrf_token = generate_csrf_token();
                                         <input type="hidden" name="action" value="change_role">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                         <input type="hidden" name="role" value="<?php echo $user['role'] === 'admin' ? 'user' : 'admin'; ?>">
-                                        <button type="submit" class="btn small" onclick="return confirm('¿Cambiar rol del usuario?')">
-                                            <?php echo $user['role'] === 'admin' ? '👤 Hacer Usuario' : '⭐ Hacer Admin'; ?>
+                                        <button type="submit" class="btn btn-outline-primary" onclick="return confirm('¿Cambiar rol del usuario?')">
+                                            <?php echo $user['role'] === 'admin' ? 'Hacer Usuario' : 'Hacer Admin'; ?>
                                         </button>
                                     </form>
                                     <!-- Eliminar -->
@@ -158,13 +153,13 @@ $csrf_token = generate_csrf_token();
                                         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                        <button type="submit" class="btn small danger" onclick="return confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')">
-                                            🗑️ Eliminar
+                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')">
+                                            Eliminar
                                         </button>
                                     </form>
                                 </div>
                                 <?php else: ?>
-                                <span style="color: var(--text-muted); font-size: 12px;">Tu cuenta</span>
+                                <span class="text-muted small">Tu cuenta</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -172,14 +167,15 @@ $csrf_token = generate_csrf_token();
                     </tbody>
                 </table>
             </div>
-            
-            <div class="welcome-message" style="margin-top: 30px;">
-                <h3>💡 Información</h3>
-                <p>Desde aquí puedes gestionar todos los usuarios del sistema. Puedes activar/desactivar cuentas, cambiar roles entre usuario y administrador, o eliminar usuarios si es necesario.</p>
-                <p style="margin-top: 10px;"><strong>Nota:</strong> No puedes modificar tu propia cuenta desde esta sección por seguridad.</p>
-            </div>
+        </div>
+        
+        <div class="card mt-4">
+          <div class="card-body">
+            <h5 class="card-title">💡 Información</h5>
+            <p class="mb-2">Desde aquí puedes gestionar todos los usuarios del sistema. Puedes activar/desactivar cuentas, cambiar roles entre usuario y administrador, o eliminar usuarios si es necesario.</p>
+            <p class="mb-0 text-muted"><strong>Nota:</strong> No puedes modificar tu propia cuenta desde esta sección por seguridad.</p>
+          </div>
+        </div>
         </main>
     </div>
     <?php $conn->close(); ?>
-</body>
-</html>

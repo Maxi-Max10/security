@@ -104,29 +104,183 @@ $message_type = '';
 $form_errors = [];
 $form_old = [];
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trabajadores - Panel Admin</title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
-    <style>
-        .toolbar { display:flex; gap:12px; justify-content: space-between; align-items:center; }
-        .search-box { display:flex; gap:8px; }
-        .grid-actions { display:flex; gap:8px; flex-wrap: wrap; }
-        .table-responsive { overflow-x:auto; }
-        .error-text { color: #dc2626; font-size: 12px; margin-top: 4px; }
-        .modal { display:none; position: fixed; inset:0; background: rgba(0,0,0,.5); align-items:center; justify-content:center; }
-        .modal.active { display:flex; }
-        .modal-content { background:#fff; padding:24px; border-radius:10px; width:100%; max-width:700px; }
-        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-        .close { cursor:pointer; font-size:22px; }
-        .sortable a { color:#fff; text-decoration:none; }
-    </style>
+<?php $page_title = 'Trabajadores'; include __DIR__.'/partials/head.php'; ?>
+    <div class="admin-layout">
+        <?php include __DIR__.'/partials/sidebar.php'; ?>
+        <?php include __DIR__.'/partials/header.php'; ?>
+        <main class="content container-fluid py-4">
+            <?php include __DIR__.'/partials/breadcrumb.php'; ?>
+            <h2 class="mt-0">👷 Gestión de Trabajadores</h2>
+
+            <div id="flash" class="alert d-none" role="alert"></div>
+
+            <div class="card mb-3">
+                <div class="card-body d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                    <form class="d-flex gap-2" id="searchForm">
+                        <input type="text" class="form-control form-control-sm" id="searchQ" placeholder="Buscar por nombre, apellido o DNI">
+                        <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-search"></i> Buscar</button>
+                    </form>
+                    <button class="btn btn-success btn-sm" onclick="openModal('createModal')"><i class="bi bi-plus-lg"></i> Nuevo trabajador</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>Listado</strong>
+                    <div class="small text-muted">Ordenar: clic en encabezados</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="sortable"><a href="#" data-sort="first_name">Nombre</a></th>
+                            <th class="sortable"><a href="#" data-sort="last_name">Apellido</a></th>
+                            <th class="sortable"><a href="#" data-sort="dni">DNI</a></th>
+                            <th class="sortable"><a href="#" data-sort="email">Email</a></th>
+                            <th>CVU/Alias</th>
+                            <th class="sortable"><a href="#" data-sort="age">Edad</a></th>
+                            <th class="sortable"><a href="#" data-sort="work_place">Lugar de trabajo</a></th>
+                            <th>Dirección</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                                        <tbody id="workersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <nav class="mt-3"><ul class="pagination pagination-sm" id="pagination"></ul></nav>
+        </main>
+    </div>
+
+        <!-- Modal Crear (Bootstrap) -->
+        <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nuevo Trabajador</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <form id="createForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                            <input type="hidden" name="action" value="create">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" name="first_name" required value="<?php echo htmlspecialchars($form_old['first_name'] ?? ''); ?>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Apellido *</label>
+                                    <input type="text" class="form-control" name="last_name" required value="<?php echo htmlspecialchars($form_old['last_name'] ?? ''); ?>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">DNI *</label>
+                                    <input type="text" class="form-control" name="dni" required pattern="\d{7,10}" value="<?php echo htmlspecialchars($form_old['dni'] ?? ''); ?>">
+                                    <div class="form-text">Solo números, 7 a 10 dígitos</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" name="email" required value="<?php echo htmlspecialchars($form_old['email'] ?? ''); ?>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">CVU / Alias</label>
+                                    <input type="text" class="form-control" name="cvu_alias" value="<?php echo htmlspecialchars($form_old['cvu_alias'] ?? ''); ?>">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Edad</label>
+                                    <input type="number" class="form-control" name="age" min="16" max="100" value="<?php echo htmlspecialchars($form_old['age'] ?? ''); ?>">
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="form-label">Lugar de trabajo *</label>
+                                    <input type="text" class="form-control" name="work_place" required value="<?php echo htmlspecialchars($form_old['work_place'] ?? ''); ?>">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Dirección o URL de Google Maps</label>
+                                    <input type="text" class="form-control" id="createAddress" name="address" onblur="parseAddressOnBlur('createAddress','createHint')" value="<?php echo htmlspecialchars($form_old['address'] ?? ''); ?>">
+                                    <div class="form-text" id="createHint"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Editar (Bootstrap) -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar Trabajador</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <form id="editForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                            <input type="hidden" name="action" value="update">
+                            <input type="hidden" name="id" value="">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" name="first_name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Apellido *</label>
+                                    <input type="text" class="form-control" name="last_name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">DNI *</label>
+                                    <input type="text" class="form-control" name="dni" required pattern="\d{7,10}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" name="email" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">CVU / Alias</label>
+                                    <input type="text" class="form-control" name="cvu_alias">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Edad</label>
+                                    <input type="number" class="form-control" name="age" min="16" max="100">
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="form-label">Lugar de trabajo *</label>
+                                    <input type="text" class="form-control" name="work_place" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Dirección o URL de Google Maps</label>
+                                    <input type="text" class="form-control" id="editAddress" name="address" onblur="parseAddressOnBlur('editAddress','editHint')">
+                                    <div class="form-text" id="editHint"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Actualizar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     <script>
-        function openModal(id){ document.getElementById(id).classList.add('active'); }
-        function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+        let createModal, editModal;
+        document.addEventListener('DOMContentLoaded', ()=>{
+          if (window.bootstrap){
+            const cm = document.getElementById('createModal');
+            const em = document.getElementById('editModal');
+            createModal = new bootstrap.Modal(cm);
+            editModal = new bootstrap.Modal(em);
+          }
+        });
+        function openModal(id){ if (id==='createModal' && createModal) createModal.show(); else if (id==='editModal' && editModal) editModal.show(); }
+        function closeModal(id){ if (id==='createModal' && createModal) createModal.hide(); else if (id==='editModal' && editModal) editModal.hide(); }
         function editWorker(worker){
             // Rellenar formulario de edición
             for (const [k,v] of Object.entries(worker)){
@@ -145,162 +299,6 @@ $form_old = [];
             } else if (val.length){ hint.textContent = 'Dirección en texto'; }
             else { hint.textContent = ''; }
         }
-    </script>
-</head>
-<body>
-  <div class="admin-layout">
-    <?php include __DIR__.'/partials/sidebar.php'; ?>
-    <?php include __DIR__.'/partials/header.php'; ?>
-    <main class="content">
-      <?php include __DIR__.'/partials/breadcrumb.php'; ?>
-      <h2 style="margin-top:0;">👷 Gestión de Trabajadores</h2>
-
-            <div id="flash" style="display:none;"></div>
-
-            <div class="toolbar" style="margin-bottom:16px;">
-                <form class="search-box" id="searchForm">
-                    <input type="text" id="searchQ" placeholder="Buscar por nombre, apellido o DNI">
-                    <button class="btn btn-primary btn-small" type="submit">Buscar</button>
-                </form>
-                <button class="btn btn-success btn-small" onclick="openModal('createModal')">+ Nuevo trabajador</button>
-            </div>
-
-            <div class="table-responsive section" style="padding:0 0 8px 0;">
-                <table class="table" style="margin:0;">
-                    <thead>
-                        <tr>
-                            <th class="sortable"><a href="#" data-sort="first_name">Nombre</a></th>
-                            <th class="sortable"><a href="#" data-sort="last_name">Apellido</a></th>
-                            <th class="sortable"><a href="#" data-sort="dni">DNI</a></th>
-                            <th class="sortable"><a href="#" data-sort="email">Email</a></th>
-                            <th>CVU/Alias</th>
-                            <th class="sortable"><a href="#" data-sort="age">Edad</a></th>
-                            <th class="sortable"><a href="#" data-sort="work_place">Lugar de trabajo</a></th>
-                            <th>Dirección</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="workersBody"></tbody>
-                </table>
-            </div>
-
-            <!-- Paginación -->
-                        <div id="pagination" style="display:flex; justify-content:space-between; align-items:center;margin-top:12px;"></div>
-        </main>
-    </div>
-
-    <!-- Modal Crear -->
-    <div class="modal" id="createModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Nuevo Trabajador</h3>
-                <span class="close" onclick="closeModal('createModal')">✕</span>
-            </div>
-            <form id="createForm">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                <input type="hidden" name="action" value="create">
-                <div class="form-group">
-                    <label>Nombre *</label>
-                    <input type="text" name="first_name" required value="<?php echo htmlspecialchars($form_old['first_name'] ?? ''); ?>">
-                    <?php if (isset($form_errors['first_name'])) echo '<div class="error-text">'.$form_errors['first_name'].'</div>'; ?>
-                </div>
-                <div class="form-group">
-                    <label>Apellido *</label>
-                    <input type="text" name="last_name" required value="<?php echo htmlspecialchars($form_old['last_name'] ?? ''); ?>">
-                    <?php if (isset($form_errors['last_name'])) echo '<div class="error-text">'.$form_errors['last_name'].'</div>'; ?>
-                </div>
-                <div class="form-group">
-                    <label>DNI *</label>
-                    <input type="text" name="dni" required pattern="\d{7,10}" value="<?php echo htmlspecialchars($form_old['dni'] ?? ''); ?>">
-                    <small>Solo números, 7 a 10 dígitos</small>
-                    <?php if (isset($form_errors['dni'])) echo '<div class="error-text">'.$form_errors['dni'].'</div>'; ?>
-                </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required value="<?php echo htmlspecialchars($form_old['email'] ?? ''); ?>">
-                    <?php if (isset($form_errors['email'])) echo '<div class="error-text">'.$form_errors['email'].'</div>'; ?>
-                </div>
-                <div class="form-group">
-                    <label>CVU / Alias</label>
-                    <input type="text" name="cvu_alias" value="<?php echo htmlspecialchars($form_old['cvu_alias'] ?? ''); ?>">
-                    <?php if (isset($form_errors['cvu_alias'])) echo '<div class="error-text">'.$form_errors['cvu_alias'].'</div>'; ?>
-                </div>
-                <div class="form-group">
-                    <label>Edad</label>
-                    <input type="number" name="age" min="16" max="100" value="<?php echo htmlspecialchars($form_old['age'] ?? ''); ?>">
-                    <?php if (isset($form_errors['age'])) echo '<div class="error-text">'.$form_errors['age'].'</div>'; ?>
-                </div>
-                <div class="form-group">
-                    <label>Lugar de trabajo *</label>
-                    <input type="text" name="work_place" required value="<?php echo htmlspecialchars($form_old['work_place'] ?? ''); ?>">
-                    <?php if (isset($form_errors['work_place'])) echo '<div class="error-text">'.$form_errors['work_place'].'</div>'; ?>
-                </div>
-                <div class="form-group">
-                    <label>Dirección o URL de Google Maps</label>
-                    <input type="text" id="createAddress" name="address" onblur="parseAddressOnBlur('createAddress','createHint')" value="<?php echo htmlspecialchars($form_old['address'] ?? ''); ?>">
-                    <small id="createHint"></small>
-                </div>
-                <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" class="btn" onclick="closeModal('createModal')">Cancelar</button>
-                    <button type="submit" class="btn primary">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Editar -->
-    <div class="modal" id="editModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Editar Trabajador</h3>
-                <span class="close" onclick="closeModal('editModal')">✕</span>
-            </div>
-            <form id="editForm">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                <input type="hidden" name="action" value="update">
-                <input type="hidden" name="id" value="">
-                <div class="form-group">
-                    <label>Nombre *</label>
-                    <input type="text" name="first_name" required>
-                </div>
-                <div class="form-group">
-                    <label>Apellido *</label>
-                    <input type="text" name="last_name" required>
-                </div>
-                <div class="form-group">
-                    <label>DNI *</label>
-                    <input type="text" name="dni" required pattern="\d{7,10}">
-                </div>
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>CVU / Alias</label>
-                    <input type="text" name="cvu_alias">
-                </div>
-                <div class="form-group">
-                    <label>Edad</label>
-                    <input type="number" name="age" min="16" max="100">
-                </div>
-                <div class="form-group">
-                    <label>Lugar de trabajo *</label>
-                    <input type="text" name="work_place" required>
-                </div>
-                <div class="form-group">
-                    <label>Dirección o URL de Google Maps</label>
-                    <input type="text" id="editAddress" name="address" onblur="parseAddressOnBlur('editAddress','editHint')">
-                    <small id="editHint"></small>
-                </div>
-                <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" class="btn" onclick="closeModal('editModal')">Cancelar</button>
-                    <button type="submit" class="btn primary">Actualizar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
         const csrfToken = <?php echo json_encode($csrf_token); ?>;
         let state = { page: 1, per_page: 10, sort: 'last_name', dir: 'asc', q: '' };
 
@@ -308,8 +306,8 @@ $form_old = [];
             const box = document.getElementById('flash');
             box.className = 'alert alert-' + (type==='success'?'success':type);
             box.textContent = text;
-            box.style.display = 'block';
-            setTimeout(()=>{ box.style.display = 'none'; }, 3000);
+            box.classList.remove('d-none');
+            setTimeout(()=>{ box.classList.add('d-none'); }, 3000);
         }
 
         async function fetchList(){
@@ -347,21 +345,15 @@ $form_old = [];
         }
 
         function renderPagination(meta){
-            const c = document.getElementById('pagination');
-            c.innerHTML = '';
-            const left = document.createElement('div');
-            left.innerHTML = `<strong>Total:</strong> ${meta.total} | Página ${meta.page} de ${meta.total_pages}`;
-            const right = document.createElement('div');
-            right.style.display = 'flex'; right.style.gap = '8px';
+            const ul = document.getElementById('pagination');
+            ul.innerHTML = '';
+            const info = document.createElement('li'); info.className = 'page-item disabled'; info.innerHTML = `<span class="page-link">Total ${meta.total} · Página ${meta.page}/${meta.total_pages}</span>`; ul.appendChild(info);
             if (meta.page > 1){
-                const prev = document.createElement('button'); prev.className='btn btn-small btn-outline'; prev.textContent='← Anterior'; prev.onclick=()=>{ state.page -= 1; fetchList(); };
-                right.appendChild(prev);
+                const prev = document.createElement('li'); prev.className='page-item'; prev.innerHTML = `<a class=\"page-link\" href=\"#\">&laquo;</a>`; prev.onclick = (e)=>{ e.preventDefault(); state.page -= 1; fetchList(); }; ul.appendChild(prev);
             }
             if (meta.page < meta.total_pages){
-                const next = document.createElement('button'); next.className='btn btn-small btn-outline'; next.textContent='Siguiente →'; next.onclick=()=>{ state.page += 1; fetchList(); };
-                right.appendChild(next);
+                const next = document.createElement('li'); next.className='page-item'; next.innerHTML = `<a class=\"page-link\" href=\"#\">&raquo;</a>`; next.onclick = (e)=>{ e.preventDefault(); state.page += 1; fetchList(); }; ul.appendChild(next);
             }
-            c.appendChild(left); c.appendChild(right);
         }
 
         function attachEvents(){
@@ -412,7 +404,7 @@ $form_old = [];
         }
 
         function escapeHtml(str){
-            return String(str).replace(/[&<>"]g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+            return String(str).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
         }
 
         document.addEventListener('DOMContentLoaded', ()=>{ attachEvents(); fetchList(); });
