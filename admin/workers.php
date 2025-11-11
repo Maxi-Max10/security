@@ -475,7 +475,14 @@ $form_old = [];
                 clearFormErrors(e.target);
                 const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
                 const j = await safeFetchJSON('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' });
-                if (j.ok){ closeModal('createModal'); showFlash('Trabajador creado'); fetchList(); e.target.reset(); }
+                if (j.ok){
+                    console.info('Creado trabajador id=', j.id);
+                    closeModal('createModal');
+                    showFlash('Trabajador creado');
+                    resetSearchAndFilters();
+                    fetchList();
+                    e.target.reset();
+                }
                 else {
                     if (j.errors) showFormErrors(e.target, j.errors);
                     showFlash(j.error||'Hay errores en el formulario', 'error');
@@ -527,6 +534,13 @@ $form_old = [];
                     if (fb && fb.classList.contains('invalid-feedback')) fb.textContent = msg;
                 }
             });
+        }
+        function resetSearchAndFilters(){
+            // limpiar búsqueda y filtros para asegurar que se vea el nuevo registro
+            const q = document.getElementById('searchQ'); if (q) q.value = '';
+            ['age_min','age_max','work_place_filter'].forEach(id => { const el = document.getElementById(id); if (el) el.value=''; });
+            const hg = document.getElementById('has_geo'); if (hg) hg.checked = false;
+            state.q=''; state.age_min=''; state.age_max=''; state.work_place=''; state.has_geo=''; state.page=1;
         }
         async function safeFetchJSON(url, options={}){
             try {
