@@ -318,18 +318,61 @@ $form_old = [];
             </div>
         </div>
 
+        <!-- Modal Eliminar (Bootstrap) -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">Eliminar Trabajador</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-1">¿Seguro que deseas eliminar a <strong id="deleteWorkerName">este trabajador</strong>?</p>
+                        <p class="mb-0 small text-muted">DNI: <span id="deleteWorkerDni">-</span></p>
+                        <div class="alert alert-warning mt-3 mb-0" role="alert">
+                            Esta acción no se puede deshacer.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <script>
-        let createModal, editModal;
+        let createModal, editModal, deleteModal;
+        let deleteTarget = null;
         document.addEventListener('DOMContentLoaded', ()=>{
           if (window.bootstrap){
             const cm = document.getElementById('createModal');
             const em = document.getElementById('editModal');
-            createModal = new bootstrap.Modal(cm);
-            editModal = new bootstrap.Modal(em);
+            const dm = document.getElementById('deleteModal');
+                        if (cm) { createModal = new bootstrap.Modal(cm); }
+                        if (em) { editModal = new bootstrap.Modal(em); }
+                        if (dm) {
+                                deleteModal = new bootstrap.Modal(dm);
+                                dm.addEventListener('hidden.bs.modal', ()=>{
+                                        deleteTarget = null;
+                                        const lbl = document.getElementById('deleteWorkerName');
+                                        if (lbl) lbl.textContent = 'este trabajador';
+                                        const dni = document.getElementById('deleteWorkerDni');
+                                        if (dni) dni.textContent = '-';
+                                });
+                        }
           }
         });
-        function openModal(id){ if (id==='createModal' && createModal) createModal.show(); else if (id==='editModal' && editModal) editModal.show(); }
-        function closeModal(id){ if (id==='createModal' && createModal) createModal.hide(); else if (id==='editModal' && editModal) editModal.hide(); }
+        function openModal(id){
+            if (id==='createModal' && createModal) { createModal.show(); return; }
+            if (id==='editModal' && editModal) { editModal.show(); return; }
+            if (id==='deleteModal' && deleteModal) { deleteModal.show(); }
+        }
+        function closeModal(id){
+            if (id==='createModal' && createModal) { createModal.hide(); return; }
+            if (id==='editModal' && editModal) { editModal.hide(); return; }
+            if (id==='deleteModal' && deleteModal) { deleteModal.hide(); }
+        }
         function editWorker(worker){
             // Rellenar formulario de edición
             for (const [k,v] of Object.entries(worker)){
@@ -385,6 +428,8 @@ $form_old = [];
                 const tr = document.createElement('tr');
                 const addr = w.address_url ? `<a href="${w.address_url}" target="_blank" class="text-decoration-none"><i class=\"bi bi-geo-alt\"></i> Mapa</a>${(w.latitude && w.longitude)?` <small class=\"text-muted\">(${w.latitude}, ${w.longitude})</small>`:''}` : (w.address_text||'');
                 const ageBadge = w.age ? `<span class=\"badge bg-secondary-subtle text-secondary\">${w.age}</span>` : '<span class=\"badge bg-light text-muted\">-</span>';
+                const workerNameAttr = escapeHtml([w.first_name, w.last_name].filter(Boolean).join(' '));
+                const workerDniAttr = escapeHtml(w.dni || '');
                 tr.innerHTML = `
                     <td>${escapeHtml(w.first_name||'')}</td>
                     <td>${escapeHtml(w.last_name||'')}</td>
@@ -397,7 +442,7 @@ $form_old = [];
                     <td>
                         <div class=\"btn-group btn-group-sm\" role=\"group\">
                             <button class=\"btn btn-outline-primary\" data-bs-toggle=\"tooltip\" title=\"Editar\" data-action=\"edit\" data-id=\"${w.id}\"><i class=\"bi bi-pencil\"></i></button>
-                            <button class=\"btn btn-outline-danger\" data-bs-toggle=\"tooltip\" title=\"Eliminar\" data-action=\"delete\" data-id=\"${w.id}\"><i class=\"bi bi-trash\"></i></button>
+                            <button class=\"btn btn-outline-danger\" data-bs-toggle=\"tooltip\" title=\"Eliminar\" data-action=\"delete\" data-id=\"${w.id}\" data-worker-name=\"${workerNameAttr}\" data-worker-dni=\"${workerDniAttr}\"><i class=\"bi bi-trash\"></i></button>
                         </div>
                     </td>`;
                 tbody.appendChild(tr);
@@ -463,10 +508,16 @@ $form_old = [];
                     const j = await safeFetchJSON('./api/workers.php?action=get&id=' + id);
                     if (j.ok){ editWorker({ id: j.data.id, first_name: j.data.first_name, last_name: j.data.last_name, dni: j.data.dni, email: j.data.email, cvu_alias: j.data.cvu_alias, age: j.data.age, work_place: j.data.work_place, address: j.data.address_url ? j.data.address_url : (j.data.address_text||'') }); }
                 } else if (act === 'delete') {
-                    if (!confirm('¿Eliminar este trabajador?')) return;
-                    const form = new FormData(); form.append('action','delete'); form.append('id', id); form.append('csrf_token', csrfToken);
-                    const j = await safeFetchJSON('./api/workers.php', { method:'POST', body: form, credentials:'same-origin' });
-                    if (j.ok) { showFlash('Trabajador eliminado'); fetchList(); } else { showFlash(j.error||'Error al eliminar', 'error'); }
+                    deleteTarget = {
+                        id,
+                        name: btn.dataset.workerName || '',
+                        dni: btn.dataset.workerDni || ''
+                    };
+                    const nameLabel = document.getElementById('deleteWorkerName');
+                    if (nameLabel) nameLabel.textContent = deleteTarget.name || 'este trabajador';
+                    const dniLabel = document.getElementById('deleteWorkerDni');
+                    if (dniLabel) dniLabel.textContent = deleteTarget.dni || '-';
+                    openModal('deleteModal');
                 }
             });
             // Create
@@ -502,6 +553,30 @@ $form_old = [];
                     if (j.db_error) console.warn('DB:', j.db_error);
                 }
             });
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const confirmDeleteDefault = confirmDeleteBtn ? confirmDeleteBtn.innerHTML : '';
+            if (confirmDeleteBtn){
+                confirmDeleteBtn.addEventListener('click', async ()=>{
+                    if (!deleteTarget) { return; }
+                    confirmDeleteBtn.disabled = true;
+                    confirmDeleteBtn.innerHTML = 'Eliminando...';
+                    const form = new FormData();
+                    form.append('action', 'delete');
+                    form.append('id', deleteTarget.id);
+                    form.append('csrf_token', csrfToken);
+                    const j = await safeFetchJSON('./api/workers.php', { method:'POST', body: form, credentials:'same-origin' });
+                    confirmDeleteBtn.disabled = false;
+                    confirmDeleteBtn.innerHTML = confirmDeleteDefault;
+                    if (j.ok) {
+                        closeModal('deleteModal');
+                        showFlash('Trabajador eliminado');
+                        fetchList();
+                    } else {
+                        showFlash(j.error || 'Error al eliminar', 'error');
+                        if (j.db_error) console.warn('DB:', j.db_error);
+                    }
+                });
+            }
         }
 
         function escapeHtml(str){
