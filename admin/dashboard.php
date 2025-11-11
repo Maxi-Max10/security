@@ -29,17 +29,8 @@ if ($conn->query("SHOW TABLES LIKE 'workers'")->num_rows === 1) {
   $total_workers = $conn->query("SELECT COUNT(*) as total FROM workers")->fetch_assoc()['total'];
 }
 
-// Intentos exitosos
-$success_attempts = $conn->query("SELECT COUNT(*) as total FROM login_attempts WHERE success = 1")->fetch_assoc()['total'];
-
-// Intentos fallidos
-$failed_attempts = $conn->query("SELECT COUNT(*) as total FROM login_attempts WHERE success = 0")->fetch_assoc()['total'];
-
 // Últimos usuarios
 $recent_users = $conn->query("SELECT id, username, email, role, created_at, is_active FROM users ORDER BY created_at DESC LIMIT 10");
-
-// Últimos intentos de login
-$recent_attempts = $conn->query("SELECT la.*, u.username FROM login_attempts la LEFT JOIN users u ON la.email = u.email ORDER BY la.attempt_time DESC LIMIT 10");
 
 $user = get_user_data();
 ?>
@@ -96,46 +87,11 @@ $user = get_user_data();
             </tbody>
           </table>
         </div>
-        </div>
       </div>
 
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center"><h6 class="mb-0">Últimos intentos de login</h6><span class="text-muted small">Historial</span></div>
-        <div class="table-responsive">
-          <table class="table table-sm table-hover mb-0">
-            <thead><tr><th>Usuario</th><th>Email</th><th>IP</th><th>Fecha</th><th>Resultado</th></tr></thead>
-            <tbody>
-              <?php while ($attempt = $recent_attempts->fetch_assoc()): ?>
-              <tr>
-                <td><?php echo htmlspecialchars($attempt['username'] ?? 'Desconocido'); ?></td>
-                <td><?php echo htmlspecialchars($attempt['email']); ?></td>
-                <td><?php echo htmlspecialchars($attempt['ip_address']); ?></td>
-                <td><?php echo date('d/m/Y H:i:s', strtotime($attempt['attempt_time'])); ?></td>
-                <td><?php echo $attempt['success'] ? '✓ EXITOSO' : '✕ FALLIDO'; ?></td>
-              </tr>
-              <?php endwhile; ?>
-            </tbody>
-          </table>
-        </div>
-        </div>
-      </div>
+      
 
-      <div class="row g-3 mb-5">
-        <div class="col-md-6">
-          <div class="card h-100"><div class="card-body">
-            <h6 class="text-muted">Tasa de éxito</h6>
-            <div class="display-6 fw-bold mb-1"><?php echo $total_attempts > 0 ? round(($success_attempts / $total_attempts) * 100) : 0; ?>%</div>
-            <span class="badge bg-success-subtle text-success">Éxito vs total</span>
-          </div></div>
-        </div>
-        <div class="col-md-6">
-          <div class="card h-100"><div class="card-body">
-            <h6 class="text-muted">Fallidos</h6>
-            <div class="display-6 fw-bold mb-1"><?php echo $failed_attempts; ?></div>
-            <span class="badge bg-danger-subtle text-danger">Intentos fallidos</span>
-          </div></div>
-        </div>
-      </div>
+      
     </main>
   </div>
   <?php $conn->close(); ?>
