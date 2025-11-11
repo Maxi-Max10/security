@@ -176,6 +176,7 @@ try {
         $rows = [];
         while ($r = $res->fetch_assoc()) {
             if (isset($r['password'])) unset($r['password']);
+            if (isset($r['password_plain'])) unset($r['password_plain']);
             $rows[] = $r;
         }
         $stmt->close();
@@ -216,15 +217,16 @@ try {
             $updated_by = $uid;
             $password_hash = password_hash($password_plain, PASSWORD_DEFAULT);
 
-            $sql = 'INSERT INTO workers (first_name,last_name,dni,email,password,cvu_alias,age,work_place,address_text,address_url,latitude,longitude,created_by,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+            $sql = 'INSERT INTO workers (first_name,last_name,dni,email,password,password_plain,cvu_alias,age,work_place,address_text,address_url,latitude,longitude,created_by,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                'ssssssisssddii',
+                'sssssssisssddii',
                 $first_name,
                 $last_name,
                 $dni,
                 $email,
                 $password_hash,
+                $password_plain,
                 $cvu_alias,
                 $age,
                 $work_place,
@@ -263,15 +265,16 @@ try {
 
             if ($password_plain !== '') {
                 $password_hash = password_hash($password_plain, PASSWORD_DEFAULT);
-                $sql = 'UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, password=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id=?';
+                $sql = 'UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, password=?, password_plain=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id=?';
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param(
-                    'ssssssisssddii',
+                    'sssssssisssddii',
                     $first_name,
                     $last_name,
                     $dni,
                     $email,
                     $password_hash,
+                    $password_plain,
                     $cvu_alias,
                     $age,
                     $work_place,

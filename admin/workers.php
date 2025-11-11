@@ -298,10 +298,20 @@ $form_old = [];
                                     <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label">Contraseña</label>
+                                    <label class="form-label">Contraseña actual</label>
+                                    <div class="input-group password-toggle-group">
+                                        <input type="password" class="form-control" data-role="current-password" readonly autocomplete="off" placeholder="No asignada">
+                                        <button type="button" class="btn btn-outline-secondary" data-toggle="password" aria-label="Mostrar u ocultar contraseña actual">
+                                            <i class="bi bi-eye-slash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Solo lectura. Visible para administradores.</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Nueva contraseña</label>
                                     <div class="input-group password-toggle-group">
                                         <input type="password" class="form-control" name="password" minlength="8" autocomplete="new-password" placeholder="Dejar vacío para no cambiar">
-                                        <button type="button" class="btn btn-outline-secondary" data-toggle="password" aria-label="Mostrar u ocultar contraseña">
+                                        <button type="button" class="btn btn-outline-secondary" data-toggle="password" aria-label="Mostrar u ocultar nueva contraseña">
                                             <i class="bi bi-eye-slash"></i>
                                         </button>
                                     </div>
@@ -418,6 +428,9 @@ $form_old = [];
             }
             const pw = document.querySelector('#editForm [name="password"]');
             if (pw) pw.value = '';
+            const currentPw = document.querySelector('#editForm [data-role="current-password"]');
+            if (currentPw) currentPw.value = worker.password_plain || '';
+            resetPasswordVisibility(document.getElementById('editModal'));
             openModal('editModal');
         }
         function parseAddressOnBlur(inputId, hintId){
@@ -545,7 +558,7 @@ $form_old = [];
                 if (act === 'edit') {
                     // load data by id (optional) or reuse row; we'll query API
                     const j = await safeFetchJSON('./api/workers.php?action=get&id=' + id);
-                    if (j.ok){ editWorker({ id: j.data.id, first_name: j.data.first_name, last_name: j.data.last_name, dni: j.data.dni, email: j.data.email, cvu_alias: j.data.cvu_alias, age: j.data.age, work_place: j.data.work_place, address: j.data.address_url ? j.data.address_url : (j.data.address_text||'') }); }
+                    if (j.ok){ editWorker({ id: j.data.id, first_name: j.data.first_name, last_name: j.data.last_name, dni: j.data.dni, email: j.data.email, password_plain: j.data.password_plain, cvu_alias: j.data.cvu_alias, age: j.data.age, work_place: j.data.work_place, address: j.data.address_url ? j.data.address_url : (j.data.address_text||'') }); }
                 } else if (act === 'delete') {
                     deleteTarget = {
                         id,
