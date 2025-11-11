@@ -70,6 +70,18 @@ function api_validate_worker($data, $is_update = false, $existing_id = null, $co
     return ['errors' => $errors, 'clean' => compact('first_name','last_name','dni','email','cvu_alias','age','work_place','address_text','address_url','lat','lng')];
 }
 
+function ensure_user_id_or_null($conn, $uid){
+    $uid = intval($uid);
+    if ($uid < 1) return null;
+    if (!$conn) return null;
+    if ($stmt = $conn->prepare('SELECT id FROM users WHERE id=? LIMIT 1')){
+        $stmt->bind_param('i',$uid); $stmt->execute(); $stmt->store_result();
+        $ok = $stmt->num_rows > 0; $stmt->close();
+        return $ok ? $uid : null;
+    }
+    return null;
+}
+
 function require_csrf_json() {
     if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
         http_response_code(400);
@@ -151,7 +163,7 @@ try {
         else {
             $c = $val['clean'];
             $age = $c['age'] !== '' ? intval($c['age']) : null;
-            $uid = intval($_SESSION['user_id']);
+            $uid = ensure_user_id_or_null($conn, $_SESSION['user_id'] ?? 0);
             $sql = 'INSERT INTO workers (first_name,last_name,dni,email,cvu_alias,age,work_place,address_text,address_url,latitude,longitude,created_by,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?, ?)';
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('sssssisssddii', $c['first_name'],$c['last_name'],$c['dni'],$c['email'],$c['cvu_alias']!==''?$c['cvu_alias']:null,$age,$c['work_place'],$c['address_text'],$c['address_url'],$c['lat'],$c['lng'],$uid,$uid);
@@ -165,7 +177,7 @@ try {
         $val = api_validate_worker($_POST,true,$id,$conn);
         if ($val['errors']) { http_response_code(422); echo json_encode(['ok'=>false,'errors'=>$val['errors']]); }
         else {
-            $c = $val['clean']; $age = $c['age'] !== '' ? intval($c['age']) : null; $uid = intval($_SESSION['user_id']);
+            $c = $val['clean']; $age = $c['age'] !== '' ? intval($c['age']) : null; $uid = ensure_user_id_or_null($conn, $_SESSION['user_id'] ?? 0);
             $sql = 'UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id=?';
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('sssssisssddii',$c['first_name'],$c['last_name'],$c['dni'],$c['email'],$c['cvu_alias']!==''?$c['cvu_alias']:null,$age,$c['work_place'],$c['address_text'],$c['address_url'],$c['lat'],$c['lng'],$uid,$id);
