@@ -14,6 +14,9 @@
 /* Minimal clean table like reference */
 .table.table-clean{--tbl-row-sep:1px solid var(--border); background:transparent}
 .table.table-clean thead th{border-bottom:var(--tbl-row-sep); color:var(--text-muted); font-weight:600; letter-spacing:.02em}
+.table.table-clean thead th a{color:inherit; text-decoration:none}
+.table.table-clean thead th a:hover{color:var(--text); text-decoration:none}
+.table.table-clean thead th .th-sort{cursor:pointer}
 .table.table-clean tbody tr+tr{border-top:var(--tbl-row-sep)}
 .table.table-clean tbody td,.table.table-clean tbody th{border:0}
 .th-sort{display:inline-flex; align-items:center; gap:.35rem}
