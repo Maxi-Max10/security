@@ -543,8 +543,9 @@ $form_old = [];
             state.q=''; state.age_min=''; state.age_max=''; state.work_place=''; state.has_geo=''; state.page=1;
         }
         async function safeFetchJSON(url, options={}){
+            let resolved = url;
             try {
-                const resolved = new URL(url, window.location.href).toString();
+                resolved = new URL(url, window.location.href).toString();
                 const res = await fetch(resolved, options);
                 const ct = res.headers.get('content-type') || '';
                 if (ct.includes('application/json')) {
