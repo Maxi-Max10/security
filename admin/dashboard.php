@@ -20,8 +20,6 @@ $active_users = $conn->query("SELECT COUNT(*) as total FROM users WHERE is_activ
 // Usuarios registrados hoy
 $today_users = $conn->query("SELECT COUNT(*) as total FROM users WHERE DATE(created_at) = CURDATE()")->fetch_assoc()['total'];
 
-// Total de intentos de login
-$total_attempts = $conn->query("SELECT COUNT(*) as total FROM login_attempts")->fetch_assoc()['total'];
 
 // Total de trabajadores
 $total_workers = 0;
@@ -51,9 +49,7 @@ $user = get_user_data();
         <div class="col-sm-6 col-lg-3">
           <div class="card shadow-sm h-100"><div class="card-body"><h6 class="text-muted">Trabajadores</h6><h3 class="fw-bold mb-0"><?php echo $total_workers; ?></h3><span class="badge bg-primary-subtle text-primary">Total</span></div></div>
         </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card shadow-sm h-100"><div class="card-body"><h6 class="text-muted">Intentos</h6><h3 class="fw-bold mb-0"><?php echo $total_attempts; ?></h3><span class="badge bg-info-subtle text-info">Logins</span></div></div>
-        </div>
+        
       </div>
 
       <div class="row g-3 mb-4">
