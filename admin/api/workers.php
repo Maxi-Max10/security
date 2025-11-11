@@ -45,6 +45,7 @@ function api_validate_worker($data, $is_update = false, $existing_id = null, $co
     $last_name = trim($data['last_name'] ?? '');
     $dni = preg_replace('/\D+/', '', $data['dni'] ?? '');
     $email = trim($data['email'] ?? '');
+    $password = $data['password'] ?? '';
     $cvu_alias = trim($data['cvu_alias'] ?? '');
     $age = trim($data['age'] ?? '');
     $work_place = trim($data['work_place'] ?? '');
@@ -54,7 +55,20 @@ function api_validate_worker($data, $is_update = false, $existing_id = null, $co
     if ($last_name === '') { $errors['last_name'] = 'Apellido obligatorio.'; }
     if ($dni === '' || !preg_match('/^\d{7,10}$/', $dni)) { $errors['dni'] = 'DNI inválido.'; }
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) { $errors['email'] = 'Email inválido.'; }
+    if ($password !== null && !is_string($password)) { $password = ''; }
+    $password = trim($password);
+
     if ($work_place === '') { $errors['work_place'] = 'Lugar de trabajo obligatorio.'; }
+
+    if (!$is_update) {
+        if ($password === '' || strlen($password) < 8) {
+            $errors['password'] = 'Contraseña mínima de 8 caracteres.';
+        }
+    } else {
+        if ($password !== '' && strlen($password) < 8) {
+            $errors['password'] = 'Contraseña mínima de 8 caracteres.';
+        }
+    }
     if ($age !== '') {
         if (!ctype_digit($age)) { $errors['age'] = 'Edad debe ser numérica.'; }
         else { $ageNum = intval($age); if ($ageNum < 16 || $ageNum > 100) { $errors['age'] = 'Edad fuera de rango.'; } }
@@ -83,7 +97,7 @@ function api_validate_worker($data, $is_update = false, $existing_id = null, $co
         } else { $address_text = $address_input; }
     }
 
-    return ['errors' => $errors, 'clean' => compact('first_name','last_name','dni','email','cvu_alias','age','work_place','address_text','address_url','lat','lng')];
+    return ['errors' => $errors, 'clean' => compact('first_name','last_name','dni','email','password','cvu_alias','age','work_place','address_text','address_url','lat','lng')];
 }
 
 function ensure_user_id_or_null($conn, $uid){
@@ -160,7 +174,10 @@ try {
         }
         $stmt->execute(); $res = $stmt->get_result();
         $rows = [];
-        while($r = $res->fetch_assoc()) { $rows[] = $r; }
+        while ($r = $res->fetch_assoc()) {
+            if (isset($r['password'])) unset($r['password']);
+            $rows[] = $r;
+        }
         $stmt->close();
         echo json_encode(['ok' => true,'data' => $rows,'page' => $page,'per_page' => $per_page,'total' => $total,'total_pages' => max(1,ceil($total/$per_page))]);
     }
@@ -168,9 +185,13 @@ try {
         $id = intval($_GET['id'] ?? 0); if ($id < 1) { throw new Exception('ID inválido'); }
         $stmt = $conn->prepare('SELECT * FROM workers WHERE id = ? LIMIT 1');
         $stmt->bind_param('i', $id); $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc(); $stmt->close();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
         if (!$row) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'No encontrado']); }
-        else { echo json_encode(['ok'=>true,'data'=>$row]); }
+        else {
+            if (isset($row['password'])) unset($row['password']);
+            echo json_encode(['ok'=>true,'data'=>$row]);
+        }
     }
     elseif ($method === 'POST' && $action === 'create') {
         require_csrf_json();
@@ -184,6 +205,7 @@ try {
             $last_name = $c['last_name'];
             $dni = $c['dni'];
             $email = $c['email'];
+            $password_plain = $c['password'];
             $cvu_alias = $c['cvu_alias'] !== '' ? $c['cvu_alias'] : null;
             $work_place = $c['work_place'];
             $address_text = $c['address_text'];
@@ -192,15 +214,17 @@ try {
             $longitude = $c['lng'] !== null ? floatval($c['lng']) : null;
             $created_by = $uid;
             $updated_by = $uid;
+            $password_hash = password_hash($password_plain, PASSWORD_DEFAULT);
 
-            $sql = 'INSERT INTO workers (first_name,last_name,dni,email,cvu_alias,age,work_place,address_text,address_url,latitude,longitude,created_by,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?, ?)';
+            $sql = 'INSERT INTO workers (first_name,last_name,dni,email,password,cvu_alias,age,work_place,address_text,address_url,latitude,longitude,created_by,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                'sssssisssddii',
+                'ssssssisssddii',
                 $first_name,
                 $last_name,
                 $dni,
                 $email,
+                $password_hash,
                 $cvu_alias,
                 $age,
                 $work_place,
@@ -228,6 +252,7 @@ try {
             $last_name = $c['last_name'];
             $dni = $c['dni'];
             $email = $c['email'];
+            $password_plain = $c['password'];
             $cvu_alias = $c['cvu_alias'] !== '' ? $c['cvu_alias'] : null;
             $work_place = $c['work_place'];
             $address_text = $c['address_text'];
@@ -236,24 +261,47 @@ try {
             $longitude = $c['lng'] !== null ? floatval($c['lng']) : null;
             $updated_by = $uid;
 
-            $sql = 'UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id=?';
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param(
-                'sssssisssddii',
-                $first_name,
-                $last_name,
-                $dni,
-                $email,
-                $cvu_alias,
-                $age,
-                $work_place,
-                $address_text,
-                $address_url,
-                $latitude,
-                $longitude,
-                $updated_by,
-                $id
-            );
+            if ($password_plain !== '') {
+                $password_hash = password_hash($password_plain, PASSWORD_DEFAULT);
+                $sql = 'UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, password=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id=?';
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param(
+                    'ssssssisssddii',
+                    $first_name,
+                    $last_name,
+                    $dni,
+                    $email,
+                    $password_hash,
+                    $cvu_alias,
+                    $age,
+                    $work_place,
+                    $address_text,
+                    $address_url,
+                    $latitude,
+                    $longitude,
+                    $updated_by,
+                    $id
+                );
+            } else {
+                $sql = 'UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id=?';
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param(
+                    'sssssisssddii',
+                    $first_name,
+                    $last_name,
+                    $dni,
+                    $email,
+                    $cvu_alias,
+                    $age,
+                    $work_place,
+                    $address_text,
+                    $address_url,
+                    $latitude,
+                    $longitude,
+                    $updated_by,
+                    $id
+                );
+            }
             if ($stmt->execute()) { echo json_encode(['ok'=>true]); } else { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'Error al actualizar','db_error'=>$stmt->error?:$conn->error]); }
             $stmt->close();
         }

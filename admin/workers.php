@@ -209,18 +209,24 @@ $form_old = [];
                                     <input type="text" class="form-control" name="last_name" required value="<?php echo htmlspecialchars($form_old['last_name'] ?? ''); ?>">
                                     <div class="invalid-feedback"></div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label">DNI *</label>
                                     <input type="text" class="form-control" name="dni" required pattern="\d{7,10}" value="<?php echo htmlspecialchars($form_old['dni'] ?? ''); ?>">
                                     <div class="form-text">Solo números, 7 a 10 dígitos</div>
                                     <div class="invalid-feedback"></div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label">Email *</label>
                                     <input type="email" class="form-control" name="email" required value="<?php echo htmlspecialchars($form_old['email'] ?? ''); ?>">
                                     <div class="invalid-feedback"></div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <label class="form-label">Contraseña *</label>
+                                    <input type="password" class="form-control" name="password" required minlength="8" autocomplete="new-password">
+                                    <div class="form-text">Mínimo 8 caracteres</div>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-3">
                                     <label class="form-label">CVU / Alias</label>
                                     <input type="text" class="form-control" name="cvu_alias" value="<?php echo htmlspecialchars($form_old['cvu_alias'] ?? ''); ?>">
                                     <div class="invalid-feedback"></div>
@@ -276,17 +282,23 @@ $form_old = [];
                                     <input type="text" class="form-control" name="last_name" required>
                                     <div class="invalid-feedback"></div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label">DNI *</label>
                                     <input type="text" class="form-control" name="dni" required pattern="\d{7,10}">
                                     <div class="invalid-feedback"></div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label">Email *</label>
                                     <input type="email" class="form-control" name="email" required>
                                     <div class="invalid-feedback"></div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <label class="form-label">Contraseña</label>
+                                    <input type="password" class="form-control" name="password" minlength="8" autocomplete="new-password" placeholder="Dejar vacío para no cambiar">
+                                    <div class="form-text">Deja en blanco para mantener la actual</div>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-3">
                                     <label class="form-label">CVU / Alias</label>
                                     <input type="text" class="form-control" name="cvu_alias">
                                     <div class="invalid-feedback"></div>
@@ -379,6 +391,8 @@ $form_old = [];
                 const el = document.querySelector('#editForm [name="'+k+'"]');
                 if (el) el.value = v ?? '';
             }
+            const pw = document.querySelector('#editForm [name="password"]');
+            if (pw) pw.value = '';
             openModal('editModal');
         }
         function parseAddressOnBlur(inputId, hintId){

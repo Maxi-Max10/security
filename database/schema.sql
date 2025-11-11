@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS workers (
     last_name VARCHAR(100) NOT NULL,
     dni VARCHAR(15) NOT NULL UNIQUE,
     email VARCHAR(120) NOT NULL UNIQUE,
+    password VARCHAR(255) NULL,
     cvu_alias VARCHAR(50) NULL,
     age TINYINT UNSIGNED NULL,
     work_place VARCHAR(150) NOT NULL,
