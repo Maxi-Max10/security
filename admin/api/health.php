@@ -7,6 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 if (!defined('API_MODE')) define('API_MODE', true);
 
 require_once '../../config/config.php';
+require_once '../../config/database.php'; // define DB_* constants
 require_once '../../includes/functions.php';
 // Avoid getDBConnection() because on failure it exits; test manually
 $status = [
@@ -17,7 +18,7 @@ $status = [
   'is_admin' => is_admin(),
 ];
 
-// DB test
+// DB test (manual, avoid helper to capture raw connection errors while still using defined constants)
 $db = null; $db_ok = false; $db_error = null;
 try {
   $db = @new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
