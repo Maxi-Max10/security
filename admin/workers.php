@@ -163,16 +163,16 @@ $form_old = [];
                     <div class="small text-muted">Ordenar: clic en encabezados</div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped table-bordered align-middle mb-0">
+                    <table class="table table-hover table-clean align-middle mb-0" id="workersTable">
                     <thead>
                         <tr>
-                            <th class="sortable"><a href="#" data-sort="first_name">Nombre</a></th>
-                            <th class="sortable"><a href="#" data-sort="last_name">Apellido</a></th>
-                            <th class="sortable"><a href="#" data-sort="dni">DNI</a></th>
-                            <th class="sortable"><a href="#" data-sort="email">Email</a></th>
+                            <th class="sortable"><a href="#" class="th-sort" data-sort="first_name">Nombre <span class="sort-icon bi"></span></a></th>
+                            <th class="sortable"><a href="#" class="th-sort" data-sort="last_name">Apellido <span class="sort-icon bi"></span></a></th>
+                            <th class="sortable"><a href="#" class="th-sort" data-sort="dni">DNI <span class="sort-icon bi"></span></a></th>
+                            <th class="sortable"><a href="#" class="th-sort" data-sort="email">Email <span class="sort-icon bi"></span></a></th>
                             <th>CVU/Alias</th>
-                            <th class="sortable"><a href="#" data-sort="age">Edad</a></th>
-                            <th class="sortable"><a href="#" data-sort="work_place">Lugar de trabajo</a></th>
+                            <th class="sortable"><a href="#" class="th-sort" data-sort="age">Edad <span class="sort-icon bi"></span></a></th>
+                            <th class="sortable"><a href="#" class="th-sort" data-sort="work_place">Lugar de trabajo <span class="sort-icon bi"></span></a></th>
                             <th>Dirección</th>
                             <th>Acciones</th>
                         </tr>
@@ -415,6 +415,7 @@ $form_old = [];
                     state.page = 1; fetchList();
                 });
             });
+            updateSortIndicators();
             // Search
             document.getElementById('searchForm').addEventListener('submit', (e)=>{
                 e.preventDefault();
@@ -473,7 +474,18 @@ $form_old = [];
             return String(str).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
         }
 
-        document.addEventListener('DOMContentLoaded', ()=>{ attachEvents(); fetchList(); });
+                function updateSortIndicators(){
+                    // Clear
+                    document.querySelectorAll('.th-sort').forEach(el=>{ el.classList.remove('active'); const ic = el.querySelector('.sort-icon'); if (ic){ ic.className='sort-icon bi'; } });
+                    const active = document.querySelector(`.th-sort[data-sort="${state.sort}"]`);
+                    if (active){
+                        active.classList.add('active');
+                        const ic = active.querySelector('.sort-icon');
+                        if (ic){ ic.classList.add(state.dir==='asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill'); }
+                    }
+                }
+
+                document.addEventListener('DOMContentLoaded', ()=>{ attachEvents(); fetchList(); });
     </script>
     <?php $conn->close(); ?>
 </body>

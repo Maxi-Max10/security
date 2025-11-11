@@ -11,6 +11,14 @@
 .badge-soft{background-color:rgba(99,102,241,.12);color:var(--primary)}
 .table thead th{border-bottom-color:var(--border)}
 .table> :not(caption)>*>*{border-bottom-color:var(--border)}
+/* Minimal clean table like reference */
+.table.table-clean{--tbl-row-sep:1px solid var(--border); background:transparent}
+.table.table-clean thead th{border-bottom:var(--tbl-row-sep); color:var(--text-muted); font-weight:600; letter-spacing:.02em}
+.table.table-clean tbody tr+tr{border-top:var(--tbl-row-sep)}
+.table.table-clean tbody td,.table.table-clean tbody th{border:0}
+.th-sort{display:inline-flex; align-items:center; gap:.35rem}
+.th-sort .sort-icon{opacity:.35; transition:opacity .15s ease}
+.th-sort.active .sort-icon{opacity:1}
 .btn-outline-muted{color:var(--text-muted);border-color:var(--border)}
 .btn-outline-muted:hover{color:var(--text);background-color:var(--card)}
 @media (max-width: 992px){:root{--sidebar-width:80px}.sidebar .nav-link span{display:none}}
