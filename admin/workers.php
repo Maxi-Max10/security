@@ -202,36 +202,44 @@ $form_old = [];
                                 <div class="col-md-6">
                                     <label class="form-label">Nombre *</label>
                                     <input type="text" class="form-control" name="first_name" required value="<?php echo htmlspecialchars($form_old['first_name'] ?? ''); ?>">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Apellido *</label>
                                     <input type="text" class="form-control" name="last_name" required value="<?php echo htmlspecialchars($form_old['last_name'] ?? ''); ?>">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">DNI *</label>
                                     <input type="text" class="form-control" name="dni" required pattern="\d{7,10}" value="<?php echo htmlspecialchars($form_old['dni'] ?? ''); ?>">
                                     <div class="form-text">Solo números, 7 a 10 dígitos</div>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Email *</label>
                                     <input type="email" class="form-control" name="email" required value="<?php echo htmlspecialchars($form_old['email'] ?? ''); ?>">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">CVU / Alias</label>
                                     <input type="text" class="form-control" name="cvu_alias" value="<?php echo htmlspecialchars($form_old['cvu_alias'] ?? ''); ?>">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Edad</label>
                                     <input type="number" class="form-control" name="age" min="16" max="100" value="<?php echo htmlspecialchars($form_old['age'] ?? ''); ?>">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-9">
                                     <label class="form-label">Lugar de trabajo *</label>
                                     <input type="text" class="form-control" name="work_place" required value="<?php echo htmlspecialchars($form_old['work_place'] ?? ''); ?>">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Dirección o URL de Google Maps</label>
                                     <input type="text" class="form-control" id="createAddress" name="address" onblur="parseAddressOnBlur('createAddress','createHint')" value="<?php echo htmlspecialchars($form_old['address'] ?? ''); ?>">
                                     <div class="form-text" id="createHint"></div>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                             </div>
                         </div>
@@ -261,35 +269,43 @@ $form_old = [];
                                 <div class="col-md-6">
                                     <label class="form-label">Nombre *</label>
                                     <input type="text" class="form-control" name="first_name" required>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Apellido *</label>
                                     <input type="text" class="form-control" name="last_name" required>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">DNI *</label>
                                     <input type="text" class="form-control" name="dni" required pattern="\d{7,10}">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Email *</label>
                                     <input type="email" class="form-control" name="email" required>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">CVU / Alias</label>
                                     <input type="text" class="form-control" name="cvu_alias">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Edad</label>
                                     <input type="number" class="form-control" name="age" min="16" max="100">
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-9">
                                     <label class="form-label">Lugar de trabajo *</label>
                                     <input type="text" class="form-control" name="work_place" required>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Dirección o URL de Google Maps</label>
                                     <input type="text" class="form-control" id="editAddress" name="address" onblur="parseAddressOnBlur('editAddress','editHint')">
                                     <div class="form-text" id="editHint"></div>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                             </div>
                         </div>
@@ -456,17 +472,31 @@ $form_old = [];
             });
             // Create
             document.getElementById('createForm').addEventListener('submit', async (e)=>{
-                e.preventDefault(); const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
-                const res = await fetch('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' }); const j = await res.json();
+                e.preventDefault();
+                clearFormErrors(e.target);
+                const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
+                const res = await fetch('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' });
+                const j = await res.json();
                 if (j.ok){ closeModal('createModal'); showFlash('Trabajador creado'); fetchList(); e.target.reset(); }
-                else { showFlash(j.error||'Hay errores en el formulario', 'error'); }
+                else {
+                    if (j.errors) showFormErrors(e.target, j.errors);
+                    showFlash(j.error||'Hay errores en el formulario', 'error');
+                    if (j.db_error) console.warn('DB:', j.db_error);
+                }
             });
             // Update
             document.getElementById('editForm').addEventListener('submit', async (e)=>{
-                e.preventDefault(); const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
-                const res = await fetch('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' }); const j = await res.json();
+                e.preventDefault();
+                clearFormErrors(e.target);
+                const fd = new FormData(e.target); fd.append('csrf_token', csrfToken);
+                const res = await fetch('api/workers.php', { method:'POST', body: fd, credentials:'same-origin' });
+                const j = await res.json();
                 if (j.ok){ closeModal('editModal'); showFlash('Trabajador actualizado'); fetchList(); }
-                else { showFlash(j.error||'Hay errores en el formulario', 'error'); }
+                else {
+                    if (j.errors) showFormErrors(e.target, j.errors);
+                    showFlash(j.error||'Hay errores en el formulario', 'error');
+                    if (j.db_error) console.warn('DB:', j.db_error);
+                }
             });
         }
 
@@ -486,6 +516,21 @@ $form_old = [];
                 }
 
                 document.addEventListener('DOMContentLoaded', ()=>{ attachEvents(); fetchList(); });
+
+        function clearFormErrors(form){
+            form.querySelectorAll('.is-invalid').forEach(el=> el.classList.remove('is-invalid'));
+            form.querySelectorAll('.invalid-feedback').forEach(el=> el.textContent='');
+        }
+        function showFormErrors(form, errors){
+            Object.entries(errors).forEach(([field, msg])=>{
+                const input = form.querySelector(`[name="${field}"]`);
+                if (input){
+                    input.classList.add('is-invalid');
+                    const fb = input.closest('.col-md-6, .col-md-4, .col-md-3, .col-md-9, .col-12')?.querySelector('.invalid-feedback') || input.nextElementSibling;
+                    if (fb && fb.classList.contains('invalid-feedback')) fb.textContent = msg;
+                }
+            });
+        }
     </script>
     <?php $conn->close(); ?>
 </body>

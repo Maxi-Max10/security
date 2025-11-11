@@ -150,7 +150,7 @@ try {
             $sql = 'INSERT INTO workers (first_name,last_name,dni,email,cvu_alias,age,work_place,address_text,address_url,latitude,longitude,created_by,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?, ?)';
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('sssssisssddii', $c['first_name'],$c['last_name'],$c['dni'],$c['email'],$c['cvu_alias']!==''?$c['cvu_alias']:null,$age,$c['work_place'],$c['address_text'],$c['address_url'],$c['lat'],$c['lng'],$uid,$uid);
-            if ($stmt->execute()) { echo json_encode(['ok'=>true,'id'=>$stmt->insert_id]); } else { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'Error al crear']); }
+            if ($stmt->execute()) { echo json_encode(['ok'=>true,'id'=>$stmt->insert_id]); } else { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'Error al crear','db_error'=>$stmt->error?:$conn->error]); }
             $stmt->close();
         }
     }
@@ -164,7 +164,7 @@ try {
             $sql = 'UPDATE workers SET first_name=?, last_name=?, dni=?, email=?, cvu_alias=?, age=?, work_place=?, address_text=?, address_url=?, latitude=?, longitude=?, updated_by=? WHERE id=?';
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('sssssisssddii',$c['first_name'],$c['last_name'],$c['dni'],$c['email'],$c['cvu_alias']!==''?$c['cvu_alias']:null,$age,$c['work_place'],$c['address_text'],$c['address_url'],$c['lat'],$c['lng'],$uid,$id);
-            if ($stmt->execute()) { echo json_encode(['ok'=>true]); } else { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'Error al actualizar']); }
+            if ($stmt->execute()) { echo json_encode(['ok'=>true]); } else { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'Error al actualizar','db_error'=>$stmt->error?:$conn->error]); }
             $stmt->close();
         }
     }
