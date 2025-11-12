@@ -1,9 +1,5 @@
 :root{--sidebar-width:260px}
 .dark .navbar,.navbar{border-bottom:1px solid var(--border)}
-.admin-layout{display:grid;grid-template-columns:var(--sidebar-width) 1fr;grid-template-rows:auto 1fr;grid-template-areas:"sidebar header" "sidebar content";min-height:100vh}
-.sidebar{grid-area:sidebar}
-.header{grid-area:header}
-.content{grid-area:content}
 /* Bootstrap helpers */
 .sidebar .nav-link{color:var(--text-muted)}
 .sidebar .nav-link.active,.sidebar .nav-link:hover{color:var(--text);background-color:var(--card);border-radius:.5rem}
@@ -24,4 +20,4 @@
 .th-sort.active .sort-icon{opacity:1}
 .btn-outline-muted{color:var(--text-muted);border-color:var(--border)}
 .btn-outline-muted:hover{color:var(--text);background-color:var(--card)}
-@media (max-width: 992px){:root{--sidebar-width:80px}.sidebar .nav-link span{display:none}}
+@media (max-width: 1199.98px){:root{--sidebar-width:240px}}
