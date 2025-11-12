@@ -1,9 +1,9 @@
 :root{--sidebar-width:260px}
 .dark .navbar,.navbar{border-bottom:1px solid var(--border)}
 /* Bootstrap helpers */
-.sidebar .nav-link{color:var(--text-muted)}
-.sidebar .nav-link.active,.sidebar .nav-link:hover{color:var(--text);background-color:var(--card);border-radius:.5rem}
-.sidebar .navbar-brand{font-weight:700}
+.sidebar .nav-link{color:inherit}
+.sidebar .nav-link.active,.sidebar .nav-link:hover{color:var(--text)}
+.sidebar-brand{font-weight:700}
 .badge-soft{background-color:rgba(99,102,241,.12);color:var(--primary)}
 .table thead th{border-bottom-color:var(--border)}
 .table> :not(caption)>*>*{border-bottom-color:var(--border)}
