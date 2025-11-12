@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggleBtn){
       event.preventDefault();
       if (mobileQuery.matches){
-        layout.classList.remove('sidebar-collapsed');
         layout.classList.toggle('sidebar-open');
         syncBodyScroll();
       } else {
@@ -76,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const handleBreakpoint = mq => {
     if (mq.matches){
       layout.classList.remove('sidebar-collapsed');
-      closeSidebar();
+      syncBodyScroll();
     } else {
       closeSidebar();
     }
