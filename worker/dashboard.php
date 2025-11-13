@@ -126,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $latestRecords = get_worker_attendance($worker['id']);
+$lastRecord = $latestRecords[0] ?? null;
 
 $fullName = trim($worker['first_name'] . ' ' . $worker['last_name']);
 $mapLink = $worker['address_url'] ?? null;
@@ -165,23 +166,20 @@ $address = $worker['address_text'] ?? null;
 
         <div class="dashboard-box">
             <h1>Hola <?php echo htmlspecialchars($worker['first_name']); ?> 👋</h1>
-            <p style="text-align:center;color:var(--gray);margin-bottom:24px;">Aquí podrás ver tu información laboral asignada por el administrador.</p>
+            <p style="text-align:center;color:var(--gray);margin-bottom:16px;">Registra tu asistencia de forma rápida y segura.</p>
 
-            <div class="user-profile">
-                <h2>Tu Información</h2>
-                <div class="info-grid">
-                    <div class="info-item"><strong>Nombre completo</strong><span><?php echo htmlspecialchars($fullName); ?></span></div>
-                    <div class="info-item"><strong>DNI</strong><span><?php echo htmlspecialchars($worker['dni']); ?></span></div>
-                    <div class="info-item"><strong>Correo</strong><span><?php echo htmlspecialchars($worker['email']); ?></span></div>
-                    <div class="info-item"><strong>Lugar de trabajo</strong><span><?php echo htmlspecialchars($worker['work_place']); ?></span></div>
-                    <div class="info-item"><strong>CVU / Alias</strong><span><?php echo $worker['cvu_alias'] ? htmlspecialchars($worker['cvu_alias']) : '<em>No asignado</em>'; ?></span></div>
-                    <div class="info-item"><strong>Edad</strong><span><?php echo $worker['age'] ? intval($worker['age']) . ' años' : '<em>No informado</em>'; ?></span></div>
-                </div>
+            <div class="quick-stats">
+                <?php if ($lastRecord): ?>
+                    <div class="chip chip-success">Último registro: <?php echo date('d/m/Y H:i', strtotime($lastRecord['recorded_at'])); ?></div>
+                    <div class="chip">Lat <?php echo htmlspecialchars(number_format((float)$lastRecord['latitude'], 5)); ?> · Lng <?php echo htmlspecialchars(number_format((float)$lastRecord['longitude'], 5)); ?></div>
+                <?php else: ?>
+                    <div class="chip chip-muted">Aún no registraste asistencia</div>
+                <?php endif; ?>
             </div>
 
             <div class="welcome-message">
                 <h3>Indicaciones</h3>
-                <p>Si necesitas actualizar tus datos personales o detectar información incorrecta, comunícate con el administrador de recursos humanos.</p>
+                <p>Presiona “Obtener ubicación” y luego “Registrar asistencia”.</p>
                 <?php if ($mapLink || $address): ?>
                     <p style="margin-top:16px;">
                         <strong>Ubicación asignada:</strong>
