@@ -116,26 +116,18 @@ $form_old = [];
 
             <div class="card mb-3">
                 <div class="card-body">
-                    <div class="row g-2 align-items-center justify-content-between mb-3">
-                        <div class="col-12 col-lg-7">
-                            <form class="row g-2 align-items-center" id="searchForm">
-                                <div class="col-12 col-md">
-                                    <input type="text" class="form-control form-control-sm" id="searchQ" placeholder="Buscar por nombre, apellido o DNI">
-                                </div>
-                                <div class="col-auto">
-                                    <button class="btn btn-primary btn-sm w-100" type="submit"><i class="bi bi-search"></i> Buscar</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="col-12 col-lg-auto">
-                            <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse"><i class="bi bi-funnel"></i> Filtros</button>
-                                <button class="btn btn-success btn-sm" onclick="openModal('createModal')"><i class="bi bi-plus-lg"></i> Nuevo</button>
-                            </div>
+                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                        <form class="d-flex gap-2" id="searchForm">
+                            <input type="text" class="form-control form-control-sm" id="searchQ" placeholder="Buscar por nombre, apellido o DNI">
+                            <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-search"></i> Buscar</button>
+                        </form>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse"><i class="bi bi-funnel"></i> Filtros</button>
+                            <button class="btn btn-success btn-sm" onclick="openModal('createModal')"><i class="bi bi-plus-lg"></i> Nuevo</button>
                         </div>
                     </div>
                     <div class="collapse" id="filtersCollapse">
-                        <form id="filtersForm" class="border rounded-3 p-3 bg-body-tertiary small">
+                        <form id="filtersForm" class="border rounded p-3 bg-body-tertiary small">
                             <div class="row g-3">
                                 <div class="col-6 col-md-3">
                                     <label class="form-label mb-1">Edad mín.</label>
