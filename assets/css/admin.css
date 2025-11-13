@@ -3,6 +3,7 @@
 /* Dark theme overrides */
 .dark{--bg:#0f172a;--panel:#111827;--muted:#94a3b8;--primary:#6366f1;--primary-2:#4f46e5;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--card:#0b1220;--border:#1f2937;--white:#fff;--text:#e5e7eb;--text-muted:#94a3b8}
 *{box-sizing:border-box}html,body{height:100%}body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+body.sidebar-locked{overflow:hidden}
 .admin-layout{display:grid;grid-template-columns:var(--sidebar-width) 1fr;grid-template-rows:var(--header-height) 1fr;grid-template-areas:"sidebar header" "sidebar content";min-height:100vh;position:relative;transition:grid-template-columns .25s ease}
 .sidebar{grid-area:sidebar;background:var(--panel);backdrop-filter:blur(8px);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;width:var(--sidebar-width);padding:16px;display:flex;flex-direction:column;gap:12px;transition:width .25s ease,transform .25s ease}
 .brand{display:flex;align-items:center;gap:10px;color:var(--text);font-weight:700;font-size:18px;padding:8px 10px;border-radius:10px;background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(79,70,229,.05))}
@@ -13,6 +14,8 @@
 .header{grid-area:header;background:var(--panel);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:1020}
 .header .left{display:flex;align-items:center;gap:10px}
 .header .right{display:flex;align-items:center;gap:10px}
+.header .container-fluid{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.header .ms-auto{display:flex;align-items:center;gap:10px}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);text-decoration:none;cursor:pointer}
 .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));border:0;color:#fff}
 .btn.danger{background:var(--danger);border:0;color:#fff}
@@ -48,18 +51,27 @@
 @media (max-width: 991.98px){
 	.admin-layout{grid-template-columns:1fr;grid-template-rows:var(--header-height) 1fr;grid-template-areas:"header" "content"}
 	.admin-layout.sidebar-collapsed{grid-template-columns:1fr}
-	.sidebar{position:fixed;top:0;left:0;bottom:0;height:100vh;width:min(var(--sidebar-width),80vw);border-right:0;border-radius:0 16px 16px 0;transform:translateX(-100%);box-shadow:0 24px 64px rgba(15,23,42,.4);z-index:1055}
-	.admin-layout.sidebar-open .sidebar{transform:translateX(0)}
+	.sidebar{position:fixed;top:0;left:0;bottom:0;height:100vh;width:min(var(--sidebar-width),80vw);border-right:0;border-radius:0 16px 16px 0;transform:translateX(-110%);opacity:0;pointer-events:none;box-shadow:0 24px 64px rgba(15,23,42,.4);z-index:1055}
+	.admin-layout.sidebar-open .sidebar{transform:translateX(0);opacity:1;pointer-events:auto}
 	.admin-layout::after{content:"";position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;pointer-events:none;transition:opacity .25s ease}
 	.admin-layout.sidebar-open::after{opacity:1;pointer-events:auto}
 	.admin-layout.sidebar-collapsed .sidebar,.admin-layout.sidebar-collapsed .brand,.admin-layout.sidebar-collapsed .nav a{width:min(var(--sidebar-width),80vw);justify-content:flex-start}
 	.admin-layout.sidebar-collapsed .brand span,.admin-layout.sidebar-collapsed .nav a span{display:inline}
 	.sidebar .navbar-brand{padding:10px 12px}
+	.header{padding:0 12px}
+	.header .container-fluid{gap:12px}
+	.header .ms-auto{flex-wrap:wrap;gap:8px;justify-content:flex-end}
+	.header .ms-auto .btn{padding:8px 12px}
+	.content{padding:24px 16px 40px}
 }
 
 @media (max-width: 575.98px){
-	.header{padding:0 12px}
-	.content{padding:16px}
+	.header .container-fluid{flex-wrap:wrap}
+	.header .container-fluid > .d-flex:first-child{width:100%;justify-content:space-between}
+	.header .ms-auto{width:100%;justify-content:space-between}
+	.header .ms-auto span{order:3;width:100%;text-align:left;padding-top:4px}
+	.header .ms-auto .btn{flex:1 1 calc(50% - 6px)}
+	.content{padding:20px 12px 32px}
 	.grid{gap:12px}
 	.card{grid-column:1/-1}
 }

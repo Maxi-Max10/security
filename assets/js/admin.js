@@ -28,7 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const mobileQuery = window.matchMedia('(max-width: 991.98px)');
 
-  const closeSidebar = () => layout.classList.remove('sidebar-open');
+  const syncBodyLock = () => {
+    document.body.classList.toggle('sidebar-locked', layout.classList.contains('sidebar-open'));
+  };
+
+  const closeSidebar = () => {
+    layout.classList.remove('sidebar-open');
+    syncBodyLock();
+  };
 
   document.addEventListener('click', event => {
     const toggleBtn = event.target.closest('[data-sidebar-toggle]');
@@ -36,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
       event.preventDefault();
       if (mobileQuery.matches){
         layout.classList.toggle('sidebar-open');
+        syncBodyLock();
       } else {
         layout.classList.toggle('sidebar-collapsed');
       }
@@ -61,10 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const handleBreakpoint = mq => {
+    closeSidebar();
     if (mq.matches){
       layout.classList.remove('sidebar-collapsed');
-    } else {
-      closeSidebar();
     }
   };
 
