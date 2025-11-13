@@ -12,6 +12,6 @@ function active_link($file){ global $active; return $active === $file ? 'active'
 		<a class="nav-link <?php echo active_link('users.php'); ?>" href="users.php">👥 <span>Usuarios</span></a>
 		<a class="nav-link <?php echo active_link('reports.php'); ?>" href="#">📑 <span>Reportes</span></a>
 		<a class="nav-link <?php echo active_link('locations.php'); ?>" href="#">📍 <span>Ubicaciones</span></a>
-		<a class="nav-link <?php echo active_link('attendance.php'); ?>" href="#">🕒 <span>Asistencia</span></a>
+		<a class="nav-link <?php echo active_link('attendance.php'); ?>" href="attendance.php">🕒 <span>Asistencia</span></a>
 	</nav>
 </aside>

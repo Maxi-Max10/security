@@ -189,4 +189,27 @@ function get_worker_profile($worker_id = null) {
 function worker_logout() {
     unset($_SESSION['worker_id'], $_SESSION['worker_name'], $_SESSION['worker_email']);
 }
+
+function get_worker_attendance($worker_id, $limit = 10) {
+    require_once __DIR__ . '/../config/database.php';
+    $conn = getDBConnection();
+
+    $limit = max(1, min(intval($limit), 50));
+
+    $stmt = $conn->prepare(
+        "SELECT id, latitude, longitude, recorded_at, attachment_path, attachment_original, created_at
+         FROM worker_attendance
+         WHERE worker_id = ?
+         ORDER BY recorded_at DESC
+         LIMIT ?"
+    );
+    $stmt->bind_param('ii', $worker_id, $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $records = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $conn->close();
+
+    return $records;
+}
 ?>
