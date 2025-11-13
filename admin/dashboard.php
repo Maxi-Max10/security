@@ -39,7 +39,7 @@ $user = get_user_data();
     <main class="content container-fluid py-4">
       <?php display_flash_message(); ?>
 
-      <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 dashboard-kpis">
         <div class="col-sm-6 col-lg-3">
           <div class="card shadow-sm h-100"><div class="card-body"><h6 class="text-muted">Usuarios</h6><h3 class="fw-bold mb-0"><?php echo $total_users; ?></h3><span class="badge badge-soft">Registrados</span></div></div>
         </div>
@@ -52,7 +52,7 @@ $user = get_user_data();
         
       </div>
 
-      <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 dashboard-shortcuts">
         <div class="col-md-4">
           <div class="card h-100"><div class="card-body"><h5 class="card-title">👷 Trabajadores</h5><p class="text-muted small">Gestiona altas, bajas y ubicaciones</p><a class="btn btn-primary btn-sm" href="workers.php">Abrir</a></div></div>
         </div>
