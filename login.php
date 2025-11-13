@@ -125,6 +125,7 @@ $csrf_token = generate_csrf_token();
             
             <div class="auth-links">
                 <p>¿No tienes cuenta? <a href="register.php">Regístrate aquí</a></p>
+                <p>¿Eres trabajador? <a href="worker/login.php">Ingresa al portal de trabajadores</a></p>
             </div>
         </div>
     </div>

@@ -24,6 +24,7 @@ if (isset($_SESSION['user_id'])) {
             <div class="button-group">
                 <a href="login.php" class="btn btn-primary">Iniciar Sesión</a>
                 <a href="register.php" class="btn btn-secondary">Registrarse</a>
+                <a href="worker/login.php" class="btn btn-outline">Acceso Trabajadores</a>
             </div>
         </div>
     </div>

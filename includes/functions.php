@@ -146,4 +146,47 @@ function require_admin() {
         redirect('dashboard.php', 'No tienes permisos para acceder a esta sección.', 'error');
     }
 }
+
+/**
+ * ==============================
+ * Autenticación de trabajadores
+ * ==============================
+ */
+
+function worker_is_logged_in() {
+    return isset($_SESSION['worker_id']);
+}
+
+function require_worker_login() {
+    if (!worker_is_logged_in()) {
+        $loginUrl = defined('SITE_URL') ? rtrim(SITE_URL, '/') . '/worker/login.php' : '/worker/login.php';
+        redirect($loginUrl, 'Debes iniciar sesión como trabajador para continuar.', 'warning');
+    }
+}
+
+function get_worker_profile($worker_id = null) {
+    if ($worker_id === null) {
+        if (!worker_is_logged_in()) {
+            return null;
+        }
+        $worker_id = intval($_SESSION['worker_id']);
+    }
+
+    require_once __DIR__ . '/../config/database.php';
+    $conn = getDBConnection();
+
+    $stmt = $conn->prepare("SELECT id, first_name, last_name, email, dni, cvu_alias, age, work_place, address_text, address_url, latitude, longitude, created_at, updated_at FROM workers WHERE id = ? LIMIT 1");
+    $stmt->bind_param('i', $worker_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $worker = $result->fetch_assoc();
+    $stmt->close();
+    $conn->close();
+
+    return $worker ?: null;
+}
+
+function worker_logout() {
+    unset($_SESSION['worker_id'], $_SESSION['worker_name'], $_SESSION['worker_email']);
+}
 ?>
