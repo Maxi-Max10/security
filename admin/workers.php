@@ -159,8 +159,17 @@ $form_old = [];
 
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>Listado</strong>
-                    <div class="small text-muted">Ordenar: clic en encabezados</div>
+                    <div class="d-flex flex-column flex-md-row align-items-md-center w-100 justify-content-between gap-2">
+                        <strong>Listado</strong>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <div class="small text-muted me-2">Ordenar: clic en encabezados</div>
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Exportar" id="exportButtons">
+                                <a href="./api/export_workers.php?format=csv" class="btn btn-outline-primary export-btn" data-format="csv" title="Descargar CSV"><i class="bi bi-filetype-csv"></i> CSV</a>
+                                <a href="./api/export_workers.php?format=excel" class="btn btn-outline-success export-btn" data-format="excel" title="Descargar Excel"><i class="bi bi-filetype-xls"></i> Excel</a>
+                                <a href="./api/export_workers.php?format=txt" class="btn btn-outline-secondary export-btn" data-format="txt" title="Descargar TXT"><i class="bi bi-filetype-txt"></i> TXT</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover table-clean align-middle mb-0" id="workersTable">
@@ -713,6 +722,31 @@ $form_old = [];
                 return div.textContent.trim().slice(0,200);
             } catch { return null; }
         }
+
+        // Export dinámico incluyendo filtros actuales
+        function buildExportUrl(format){
+            const base = new URL('./api/export_workers.php', window.location.href);
+            base.searchParams.set('format', format);
+            if (state.q) base.searchParams.set('q', state.q);
+            if (state.age_min) base.searchParams.set('age_min', state.age_min);
+            if (state.age_max) base.searchParams.set('age_max', state.age_max);
+            if (state.work_place) base.searchParams.set('work_place', state.work_place);
+            if (state.has_geo) base.searchParams.set('has_geo', '1');
+            base.searchParams.set('sort', state.sort);
+            base.searchParams.set('dir', state.dir);
+            return base.toString();
+        }
+        document.addEventListener('DOMContentLoaded', ()=>{
+            document.querySelectorAll('#exportButtons .export-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.preventDefault();
+                    const format = btn.getAttribute('data-format');
+                    const url = buildExportUrl(format);
+                    // Navegar para descargar
+                    window.location.href = url;
+                });
+            });
+        });
     </script>
     <?php $conn->close(); ?>
 </body>
