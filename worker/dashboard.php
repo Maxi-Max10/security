@@ -302,13 +302,14 @@ $address = $worker['address_text'] ?? null;
         }
 
         .time-value {
-            font-size: clamp(28px, 7vw, 36px);
+            font-size: clamp(16px, 4vw, 20px);
             font-weight: 700;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
         }
 
         .time-note {
@@ -611,13 +612,26 @@ $address = $worker['address_text'] ?? null;
 
             let locationCaptured = false;
 
-            // Actualizar reloj
+            // Actualizar reloj con fecha y hora
             const updateClock = () => {
                 const now = new Date();
+                
+                // Formatear fecha
+                const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                
+                const dayName = days[now.getDay()];
+                const day = now.getDate();
+                const month = months[now.getMonth()];
+                const year = now.getFullYear();
+                
+                // Formatear hora
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 const seconds = String(now.getSeconds()).padStart(2, '0');
-                clockDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+                
+                // Mostrar: "Lunes, 13 Nov 2025 - 14:30:45"
+                clockDisplay.textContent = `${dayName}, ${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
                 
                 if (locationCaptured) {
                     recordedAtInput.value = now.toISOString();
