@@ -600,8 +600,7 @@ $address = $worker['address_text'] ?? null;
         </div>
     </div>
 
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         (function() {
             const captureBtn = document.getElementById('captureLocationBtn');
@@ -614,8 +613,8 @@ $address = $worker['address_text'] ?? null;
             const clockDisplay = document.getElementById('clockDisplay');
             const modal = document.getElementById('attendanceModal');
 
-            // Manejador del modal Bootstrap
-            if (modal && modal.hasAttribute('data-show')) {
+            // Manejador del modal Bootstrap (protección por si no carga la librería)
+            if (modal && modal.hasAttribute('data-show') && window.bootstrap && bootstrap.Modal) {
                 const bootstrapModal = new bootstrap.Modal(modal);
                 bootstrapModal.show();
             }
@@ -717,6 +716,5 @@ $address = $worker['address_text'] ?? null;
             });
         })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
