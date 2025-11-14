@@ -137,9 +137,293 @@ $address = $worker['address_text'] ?? null;
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Panel del Trabajador - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* Estilos específicos del worker dashboard */
+        .worker-container {
+            max-width: 100%;
+            width: 100%;
+            padding: 0;
+        }
+
+        .worker-dashboard {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: clamp(16px, 4vw, 24px);
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: clamp(24px, 5vw, 32px);
+        }
+
+        .hero-section h1 {
+            font-size: clamp(24px, 5vw, 32px);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(14px, 3vw, 16px);
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .stat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .stat-chip.success {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border: 1.5px solid rgba(16,185,129,0.3);
+        }
+
+        .stat-chip.info {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+            border: 1.5px solid rgba(59,130,246,0.3);
+        }
+
+        .stat-chip.muted {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1.5px solid #e5e7eb;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: var(--radius);
+            padding: clamp(18px, 4vw, 24px);
+            margin-bottom: clamp(16px, 4vw, 20px);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .card-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .card-title {
+            font-size: clamp(16px, 4vw, 18px);
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .location-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .location-display {
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 2px dashed rgba(99, 102, 241, 0.3);
+            background: rgba(249, 250, 251, 0.5);
+            transition: var(--transition);
+        }
+
+        .location-display.active {
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(209, 250, 229, 0.3);
+        }
+
+        .location-display.loading {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(219, 234, 254, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .location-display.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(254, 226, 226, 0.3);
+        }
+
+        .location-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary-color);
+            margin-bottom: 6px;
+        }
+
+        .location-text {
+            font-size: 14px;
+            color: var(--dark);
+            line-height: 1.5;
+        }
+
+        .time-display {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+
+        .time-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .time-value {
+            font-size: clamp(28px, 7vw, 36px);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+        }
+
+        .time-note {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 6px;
+        }
+
+        .file-upload-area {
+            border: 2px dashed rgba(99, 102, 241, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+            background: rgba(249, 250, 251, 0.5);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .file-upload-area:hover {
+            border-color: rgba(99, 102, 241, 0.6);
+            background: white;
+        }
+
+        .file-upload-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .file-upload-hint {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn-large {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .history-card {
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: var(--transition);
+        }
+
+        .history-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);
+        }
+
+        .history-date {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .history-coords {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .history-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        @media (max-width: 640px) {
+            .worker-dashboard {
+                padding: 12px;
+            }
+
+            .stat-chip {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .btn-sm {
+                width: 100%;
+                flex: none;
+            }
+
+            .history-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="navbar">
@@ -154,27 +438,143 @@ $address = $worker['address_text'] ?? null;
         </div>
     </div>
 
-    <div class="container">
-        <?php display_flash_message(); ?>
+    <div class="container worker-container">
+        <?php 
+        // Limpiar la sesión de éxito después de mostrar
+        $showSuccessModal = !empty($_SESSION['attendance_success']);
+        if ($showSuccessModal) {
+            unset($_SESSION['attendance_success']);
+        }
+        ?>
 
         <!-- Modal de confirmación de asistencia -->
-        <div class="modal<?php echo !empty($_SESSION['attendance_success']) ? ' is-visible' : ''; ?>" id="attendanceModal" aria-hidden="<?php echo !empty($_SESSION['attendance_success']) ? 'false' : 'true'; ?>">
+        <div class="modal<?php echo $showSuccessModal ? ' is-visible' : ''; ?>" id="attendanceModal" aria-hidden="<?php echo $showSuccessModal ? 'false' : 'true'; ?>">
             <div class="modal-backdrop" data-modal-close></div>
             <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="attendanceModalTitle">
                 <div class="modal-icon">✓</div>
-                <h2 id="attendanceModalTitle">Asistencia registrada</h2>
+                <h2 id="attendanceModalTitle">¡Asistencia registrada!</h2>
                 <p class="modal-text">Tu asistencia fue registrada correctamente. ¡Buen trabajo!</p>
                 <button type="button" class="btn btn-primary btn-block" data-modal-close>Entendido</button>
             </div>
         </div>
 
         <?php if ($attendanceErrors): ?>
-            <div class="alert alert-error">
+            <div class="alert alert-error" style="max-width: 680px; margin: 20px auto;">
                 <?php foreach ($attendanceErrors as $error): ?>
                     <p><?php echo htmlspecialchars($error); ?></p>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+
+        <div class="worker-dashboard">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1>👋 Hola, <?php echo htmlspecialchars($worker['first_name']); ?></h1>
+                <p class="hero-subtitle">Registra tu asistencia de forma rápida y segura</p>
+                
+                <div class="stats-row">
+                    <?php if ($lastRecord): ?>
+                        <span class="stat-chip success">
+                            ✓ Último: <?php echo date('d/m/Y H:i', strtotime($lastRecord['recorded_at'])); ?>
+                        </span>
+                        <span class="stat-chip info">
+                            📍 Lat <?php echo number_format((float)$lastRecord['latitude'], 4); ?>, Lng <?php echo number_format((float)$lastRecord['longitude'], 4); ?>
+                        </span>
+                    <?php else: ?>
+                        <span class="stat-chip muted">📋 Sin registros previos</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Ubicación asignada (si existe) -->
+            <?php if ($mapLink || $address): ?>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📍 Ubicación asignada</h3>
+                    </div>
+                    <?php if ($address): ?>
+                        <p style="color: var(--gray); margin-bottom: 12px; font-size: 14px;"><?php echo htmlspecialchars($address); ?></p>
+                    <?php endif; ?>
+                    <?php if ($mapLink): ?>
+                        <a href="<?php echo htmlspecialchars($mapLink); ?>" target="_blank" rel="noopener" class="btn btn-outline btn-small">
+                            Ver en Google Maps →
+                        </a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Formulario de registro -->
+            <form class="card" method="POST" enctype="multipart/form-data" autocomplete="off" novalidate>
+                <div class="card-header">
+                    <h3 class="card-title">📝 Registrar asistencia</h3>
+                    <p class="card-subtitle">Captura tu ubicación y confirma el registro</p>
+                </div>
+
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generate_csrf_token()); ?>">
+                <input type="hidden" name="latitude" id="latitudeInput">
+                <input type="hidden" name="longitude" id="longitudeInput">
+                <input type="hidden" name="recorded_at" id="recordedAtInput">
+
+                <div class="location-section">
+                    <div class="location-display" id="locationDisplay">
+                        <div class="location-label">📍 UBICACIÓN GPS</div>
+                        <div class="location-text" id="locationText">Presiona el botón para capturar tu ubicación</div>
+                    </div>
+                    <button type="button" class="btn btn-outline" id="captureLocationBtn">
+                        Obtener ubicación
+                    </button>
+                </div>
+
+                <div class="time-display">
+                    <div class="time-label">🕐 FECHA Y HORA</div>
+                    <div class="time-value" id="clockDisplay">--:--:--</div>
+                    <div class="time-note">Se guarda automáticamente al registrar</div>
+                </div>
+
+                <div class="file-upload-area" onclick="document.getElementById('attachment').click()">
+                    <div class="file-upload-label">📎 Adjuntar archivo (opcional)</div>
+                    <div class="file-upload-hint">JPG, PNG, WEBP, GIF, PDF · Máx 8 MB</div>
+                    <input type="file" name="attachment" id="attachment" accept="image/*,application/pdf" class="file-input">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large" id="submitAttendance" disabled>
+                    Registrar asistencia
+                </button>
+            </form>
+
+            <!-- Historial de registros -->
+            <?php if ($latestRecords): ?>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📜 Últimos registros</h3>
+                    </div>
+                    
+                    <?php foreach ($latestRecords as $record): ?>
+                        <div class="history-card">
+                            <div class="history-date">
+                                📅 <?php echo date('d/m/Y H:i', strtotime($record['recorded_at'])); ?>
+                            </div>
+                            <div class="history-coords">
+                                Lat: <?php echo number_format((float)$record['latitude'], 5); ?> · Lng: <?php echo number_format((float)$record['longitude'], 5); ?>
+                            </div>
+                            <div class="history-buttons">
+                                <a href="https://www.google.com/maps?q=<?php echo rawurlencode($record['latitude'] . ',' . $record['longitude']); ?>" 
+                                   target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+                                    🗺️ Ver mapa
+                                </a>
+                                <?php if (!empty($record['attachment_path'])): ?>
+                                    <a href="../<?php echo htmlspecialchars($record['attachment_path']); ?>" 
+                                       target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+                                        📄 Ver archivo
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
 
         <div class="dashboard-box">
             <h1>Bienvenido/a <?php echo htmlspecialchars($worker['first_name']); ?> 👋</h1>
@@ -269,14 +669,15 @@ $address = $worker['address_text'] ?? null;
         (function() {
             const captureBtn = document.getElementById('captureLocationBtn');
             const submitBtn = document.getElementById('submitAttendance');
-            const locationSummary = document.getElementById('locationSummary');
+            const locationDisplay = document.getElementById('locationDisplay');
+            const locationText = document.getElementById('locationText');
             const latitudeInput = document.getElementById('latitudeInput');
             const longitudeInput = document.getElementById('longitudeInput');
             const recordedAtInput = document.getElementById('recordedAtInput');
             const clockDisplay = document.getElementById('clockDisplay');
-            const locationStatus = document.getElementById('locationStatus');
             const modal = document.getElementById('attendanceModal');
 
+            // Manejador del modal
             if (modal) {
                 const closeElements = modal.querySelectorAll('[data-modal-close]');
                 closeElements.forEach(function(el) {
@@ -289,10 +690,14 @@ $address = $worker['address_text'] ?? null;
 
             let locationCaptured = false;
 
+            // Actualizar reloj
             const updateClock = () => {
                 const now = new Date();
-                const options = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
-                clockDisplay.textContent = now.toLocaleTimeString('es-ES', options);
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                clockDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+                
                 if (locationCaptured) {
                     recordedAtInput.value = now.toISOString();
                 }
@@ -301,11 +706,7 @@ $address = $worker['address_text'] ?? null;
             setInterval(updateClock, 1000);
             updateClock();
 
-            function setStatus(message, status) {
-                locationSummary.textContent = message;
-                locationStatus.dataset.state = status;
-            }
-
+            // Manejo de ubicación
             function handleLocationSuccess(position) {
                 const { latitude, longitude } = position.coords;
                 latitudeInput.value = latitude.toFixed(7);
@@ -313,28 +714,34 @@ $address = $worker['address_text'] ?? null;
                 locationCaptured = true;
                 recordedAtInput.value = new Date().toISOString();
                 submitBtn.disabled = false;
+                
+                locationDisplay.className = 'location-display active';
+                locationText.textContent = `✓ Ubicación capturada: Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`;
                 captureBtn.textContent = 'Actualizar ubicación';
-                setStatus(`Ubicación actualizada ✔ Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`, 'success');
             }
 
             function handleLocationError(error) {
                 submitBtn.disabled = true;
                 locationCaptured = false;
+                locationDisplay.className = 'location-display error';
+                
                 const messages = {
-                    1: 'Activa los permisos de ubicación en tu dispositivo.',
-                    2: 'No pudimos obtener tu ubicación. Verifica la señal.',
-                    3: 'La solicitud de ubicación expiró. Intenta nuevamente.'
+                    1: '✕ Debes activar los permisos de ubicación en tu dispositivo',
+                    2: '✕ No se pudo obtener la ubicación. Verifica tu señal GPS',
+                    3: '✕ La solicitud de ubicación expiró. Intenta nuevamente'
                 };
-                setStatus(messages[error.code] || 'No pudimos obtener la ubicación. Intenta de nuevo.', 'error');
+                locationText.textContent = messages[error.code] || '✕ Error al obtener la ubicación';
             }
 
             captureBtn.addEventListener('click', function() {
                 if (!navigator.geolocation) {
-                    setStatus('Tu dispositivo no admite geolocalización.', 'error');
+                    locationDisplay.className = 'location-display error';
+                    locationText.textContent = '✕ Tu dispositivo no soporta geolocalización';
                     return;
                 }
 
-                setStatus('Obteniendo ubicación, espera unos segundos...', 'loading');
+                locationDisplay.className = 'location-display loading';
+                locationText.textContent = '⏳ Obteniendo ubicación, espera unos segundos...';
                 submitBtn.disabled = true;
 
                 navigator.geolocation.getCurrentPosition(handleLocationSuccess, handleLocationError, {
@@ -344,8 +751,9 @@ $address = $worker['address_text'] ?? null;
                 });
             });
 
+            // Auto-capturar ubicación al cargar
             window.addEventListener('load', () => {
-                captureBtn.click();
+                setTimeout(() => captureBtn.click(), 500);
             });
         })();
     </script>
