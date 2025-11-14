@@ -569,6 +569,18 @@ $address = $worker['address_text'] ?? null;
         </div>
     </div>
 
+    <!-- Toast de aviso de geolocalización -->
+    <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1080;">
+        <div id="geoToast" class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="geoToastMsg">
+                    Activa la ubicación del dispositivo y otorga permisos al navegador para continuar.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         (function() {
@@ -581,6 +593,8 @@ $address = $worker['address_text'] ?? null;
             const recordedAtInput = document.getElementById('recordedAtInput');
             const clockDisplay = document.getElementById('clockDisplay');
             const modal = document.getElementById('attendanceModal');
+            const geoToastEl = document.getElementById('geoToast');
+            const geoToastMsg = document.getElementById('geoToastMsg');
 
             // Manejador del modal Bootstrap (protección por si no carga la librería)
             if (modal && modal.hasAttribute('data-show') && window.bootstrap && bootstrap.Modal) {
@@ -589,6 +603,19 @@ $address = $worker['address_text'] ?? null;
             }
 
             let locationCaptured = false;
+
+            const showGeoToast = (message) => {
+                if (geoToastMsg && typeof message === 'string' && message.trim()) {
+                    geoToastMsg.textContent = message;
+                }
+                if (geoToastEl && window.bootstrap && bootstrap.Toast) {
+                    const t = new bootstrap.Toast(geoToastEl, { delay: 6000 });
+                    t.show();
+                } else if (message) {
+                    // Fallback simple si no cargó Bootstrap
+                    try { alert(message); } catch (_) {}
+                }
+            };
 
             // Helper: obtener timestamp local en formato SQL (YYYY-MM-DD HH:MM:SS)
             const getLocalSqlTimestamp = (d = new Date()) => {
@@ -646,11 +673,13 @@ $address = $worker['address_text'] ?? null;
                 if (locationDisplay) locationDisplay.className = 'location-display error';
                 
                 const messages = {
-                    1: '✕ Debes activar los permisos de ubicación en tu dispositivo',
-                    2: '✕ No se pudo obtener la ubicación. Verifica tu señal GPS',
+                    1: 'Debes otorgar permisos de ubicación al navegador para continuar.',
+                    2: 'Activa la ubicación del dispositivo o verifica tu señal GPS.',
                     3: '✕ La solicitud de ubicación expiró. Intenta nuevamente'
                 };
-                if (locationText) locationText.textContent = messages[error.code] || '✕ Error al obtener la ubicación';
+                const msg = messages[error.code] || 'No se pudo obtener la ubicación. Verifica que la ubicación esté activada y los permisos concedidos.';
+                if (locationText) locationText.textContent = '✕ ' + msg;
+                showGeoToast(msg);
             }
 
             if (captureBtn) {
@@ -658,6 +687,7 @@ $address = $worker['address_text'] ?? null;
                     if (!navigator.geolocation) {
                         if (locationDisplay) locationDisplay.className = 'location-display error';
                         if (locationText) locationText.textContent = '✕ Tu dispositivo no soporta geolocalización';
+                        showGeoToast('Tu dispositivo o navegador no soporta geolocalización.');
                         return;
                     }
 
@@ -695,6 +725,8 @@ $address = $worker['address_text'] ?? null;
                             timeout: 15000,
                             maximumAge: 0
                         });
+                    } else {
+                        showGeoToast('Tu dispositivo o navegador no soporta geolocalización.');
                     }
                 }, 500);
             });
