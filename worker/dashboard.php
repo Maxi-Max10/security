@@ -633,43 +633,45 @@ $address = $worker['address_text'] ?? null;
                 longitudeInput.value = longitude.toFixed(7);
                 locationCaptured = true;
                 recordedAtInput.value = getLocalSqlTimestamp();
-                submitBtn.disabled = false;
+                if (submitBtn) submitBtn.disabled = false;
                 
-                locationDisplay.className = 'location-display active';
-                locationText.textContent = `✓ Ubicación capturada: Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`;
-                captureBtn.textContent = 'Actualizar ubicación';
+                if (locationDisplay) locationDisplay.className = 'location-display active';
+                if (locationText) locationText.textContent = `✓ Ubicación capturada: Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`;
+                if (captureBtn) captureBtn.textContent = 'Actualizar ubicación';
             }
 
             function handleLocationError(error) {
-                submitBtn.disabled = true;
+                if (submitBtn) submitBtn.disabled = true;
                 locationCaptured = false;
-                locationDisplay.className = 'location-display error';
+                if (locationDisplay) locationDisplay.className = 'location-display error';
                 
                 const messages = {
                     1: '✕ Debes activar los permisos de ubicación en tu dispositivo',
                     2: '✕ No se pudo obtener la ubicación. Verifica tu señal GPS',
                     3: '✕ La solicitud de ubicación expiró. Intenta nuevamente'
                 };
-                locationText.textContent = messages[error.code] || '✕ Error al obtener la ubicación';
+                if (locationText) locationText.textContent = messages[error.code] || '✕ Error al obtener la ubicación';
             }
 
-            captureBtn.addEventListener('click', function() {
-                if (!navigator.geolocation) {
-                    locationDisplay.className = 'location-display error';
-                    locationText.textContent = '✕ Tu dispositivo no soporta geolocalización';
-                    return;
-                }
+            if (captureBtn) {
+                captureBtn.addEventListener('click', function() {
+                    if (!navigator.geolocation) {
+                        if (locationDisplay) locationDisplay.className = 'location-display error';
+                        if (locationText) locationText.textContent = '✕ Tu dispositivo no soporta geolocalización';
+                        return;
+                    }
 
-                locationDisplay.className = 'location-display loading';
-                locationText.textContent = '⏳ Obteniendo ubicación, espera unos segundos...';
-                submitBtn.disabled = true;
+                    if (locationDisplay) locationDisplay.className = 'location-display loading';
+                    if (locationText) locationText.textContent = '⏳ Obteniendo ubicación, espera unos segundos...';
+                    if (submitBtn) submitBtn.disabled = true;
 
-                navigator.geolocation.getCurrentPosition(handleLocationSuccess, handleLocationError, {
-                    enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 0
+                    navigator.geolocation.getCurrentPosition(handleLocationSuccess, handleLocationError, {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    });
                 });
-            });
+            }
 
             // Antes de enviar, fijar timestamp definitivo (por si pasó 1 segundo entre último tick y submit)
             const form = document.querySelector('form.card');
@@ -681,7 +683,20 @@ $address = $worker['address_text'] ?? null;
 
             // Auto-capturar ubicación al cargar
             window.addEventListener('load', () => {
-                setTimeout(() => captureBtn.click(), 500);
+                setTimeout(() => {
+                    if (captureBtn) {
+                        captureBtn.click();
+                    } else if (navigator.geolocation) {
+                        if (locationDisplay) locationDisplay.className = 'location-display loading';
+                        if (locationText) locationText.textContent = '⏳ Obteniendo ubicación, espera unos segundos...';
+                        if (submitBtn) submitBtn.disabled = true;
+                        navigator.geolocation.getCurrentPosition(handleLocationSuccess, handleLocationError, {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        });
+                    }
+                }, 500);
             });
         })();
     </script>
