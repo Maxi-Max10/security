@@ -115,7 +115,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $stmt->close();
             $conn->close();
-            redirect('dashboard.php', 'Asistencia registrada correctamente. ¡Buen trabajo!', 'success');
+            $_SESSION['attendance_success'] = true;
+            redirect('dashboard.php');
         } else {
             $attendanceErrors[] = 'No pudimos registrar tu asistencia. Intenta nuevamente.';
             error_log('worker_attendance_insert_error: ' . $stmt->error);
@@ -156,6 +157,17 @@ $address = $worker['address_text'] ?? null;
     <div class="container">
         <?php display_flash_message(); ?>
 
+        <!-- Modal de confirmación de asistencia -->
+        <div class="modal<?php echo !empty($_SESSION['attendance_success']) ? ' is-visible' : ''; ?>" id="attendanceModal" aria-hidden="<?php echo !empty($_SESSION['attendance_success']) ? 'false' : 'true'; ?>">
+            <div class="modal-backdrop" data-modal-close></div>
+            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="attendanceModalTitle">
+                <div class="modal-icon">✓</div>
+                <h2 id="attendanceModalTitle">Asistencia registrada</h2>
+                <p class="modal-text">Tu asistencia fue registrada correctamente. ¡Buen trabajo!</p>
+                <button type="button" class="btn btn-primary btn-block" data-modal-close>Entendido</button>
+            </div>
+        </div>
+
         <?php if ($attendanceErrors): ?>
             <div class="alert alert-error">
                 <?php foreach ($attendanceErrors as $error): ?>
@@ -165,7 +177,7 @@ $address = $worker['address_text'] ?? null;
         <?php endif; ?>
 
         <div class="dashboard-box">
-            <h1>Hola <?php echo htmlspecialchars($worker['first_name']); ?> 👋</h1>
+            <h1>Bienvenido/a <?php echo htmlspecialchars($worker['first_name']); ?> 👋</h1>
             <p style="text-align:center;color:var(--gray);margin-bottom:16px;">Registra tu asistencia de forma rápida y segura.</p>
 
             <div class="quick-stats">
@@ -263,6 +275,17 @@ $address = $worker['address_text'] ?? null;
             const recordedAtInput = document.getElementById('recordedAtInput');
             const clockDisplay = document.getElementById('clockDisplay');
             const locationStatus = document.getElementById('locationStatus');
+            const modal = document.getElementById('attendanceModal');
+
+            if (modal) {
+                const closeElements = modal.querySelectorAll('[data-modal-close]');
+                closeElements.forEach(function(el) {
+                    el.addEventListener('click', function() {
+                        modal.classList.remove('is-visible');
+                        modal.setAttribute('aria-hidden', 'true');
+                    });
+                });
+            }
 
             let locationCaptured = false;
 

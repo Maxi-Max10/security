@@ -434,6 +434,70 @@ body::before {
     content: 'ℹ';
 }
 
+/* Modal genérico */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.modal.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(6px);
+}
+
+.modal-dialog {
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
+    width: calc(100% - 32px);
+    background: linear-gradient(135deg, #ffffff, #f9fafb);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
+    padding: 28px 24px 24px;
+    text-align: center;
+    animation: fadeInUp 0.35s ease;
+}
+
+.modal-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #d1fae5;
+    color: #059669;
+    font-size: 30px;
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.25);
+}
+
+.modal-dialog h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: var(--dark);
+}
+
+.modal-text {
+    font-size: 14px;
+    color: var(--gray);
+    margin-bottom: 20px;
+}
+
 /* Auth Links */
 .auth-links {
     margin-top: 24px;
