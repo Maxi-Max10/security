@@ -139,6 +139,7 @@ $address = $worker['address_text'] ?? null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Panel del Trabajador - <?php echo SITE_NAME; ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
         /* Estilos específicos del worker dashboard */
@@ -447,14 +448,26 @@ $address = $worker['address_text'] ?? null;
         }
         ?>
 
-        <!-- Modal de confirmación de asistencia -->
-        <div class="modal<?php echo $showSuccessModal ? ' is-visible' : ''; ?>" id="attendanceModal" aria-hidden="<?php echo $showSuccessModal ? 'false' : 'true'; ?>">
-            <div class="modal-backdrop" data-modal-close></div>
-            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="attendanceModalTitle">
-                <div class="modal-icon">✓</div>
-                <h2 id="attendanceModalTitle">¡Asistencia registrada!</h2>
-                <p class="modal-text">Tu asistencia fue registrada correctamente. ¡Buen trabajo!</p>
-                <button type="button" class="btn btn-primary btn-block" data-modal-close>Entendido</button>
+        <!-- Modal de Bootstrap para confirmación de asistencia -->
+        <div class="modal fade" id="attendanceModal" tabindex="-1" aria-labelledby="attendanceModalLabel" aria-hidden="true"<?php echo $showSuccessModal ? ' data-show="true"' : ''; ?>>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center px-4 pb-4">
+                        <div class="mb-3">
+                            <div style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.1);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#059669" viewBox="0 0 16 16">
+                                    <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 class="mb-2" id="attendanceModalLabel" style="color: #1f2937; font-weight: 700;">¡Asistencia registrada!</h3>
+                        <p class="text-muted mb-4">Tu asistencia fue registrada correctamente. ¡Buen trabajo!</p>
+                        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" style="padding: 12px; font-weight: 600;">Entendido</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -677,15 +690,10 @@ $address = $worker['address_text'] ?? null;
             const clockDisplay = document.getElementById('clockDisplay');
             const modal = document.getElementById('attendanceModal');
 
-            // Manejador del modal
-            if (modal) {
-                const closeElements = modal.querySelectorAll('[data-modal-close]');
-                closeElements.forEach(function(el) {
-                    el.addEventListener('click', function() {
-                        modal.classList.remove('is-visible');
-                        modal.setAttribute('aria-hidden', 'true');
-                    });
-                });
+            // Manejador del modal Bootstrap
+            if (modal && modal.hasAttribute('data-show')) {
+                const bootstrapModal = new bootstrap.Modal(modal);
+                bootstrapModal.show();
             }
 
             let locationCaptured = false;
@@ -757,5 +765,6 @@ $address = $worker['address_text'] ?? null;
             });
         })();
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
