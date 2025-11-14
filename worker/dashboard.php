@@ -178,7 +178,7 @@ $address = $worker['address_text'] ?? null;
 
         .hero-subtitle {
             font-size: clamp(14px, 3vw, 16px);
-            color: var(--gray);
+            color: #ececec;
             margin-bottom: 20px;
         }
 
@@ -531,7 +531,6 @@ $address = $worker['address_text'] ?? null;
             <form class="card" method="POST" enctype="multipart/form-data" autocomplete="off" novalidate>
                 <div class="card-header">
                     <h3 class="card-title">📝 Registrar asistencia</h3>
-                    <p class="card-subtitle">Captura tu ubicación y confirma el registro</p>
                 </div>
 
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generate_csrf_token()); ?>">
@@ -539,7 +538,7 @@ $address = $worker['address_text'] ?? null;
                 <input type="hidden" name="longitude" id="longitudeInput">
                 <input type="hidden" name="recorded_at" id="recordedAtInput">
 
-                <div class="location-section">
+<!--                 <div class="location-section">
                     <div class="location-display" id="locationDisplay">
                         <div class="location-label">📍 UBICACIÓN GPS</div>
                         <div class="location-text" id="locationText">Presiona el botón para capturar tu ubicación</div>
@@ -547,7 +546,7 @@ $address = $worker['address_text'] ?? null;
                     <button type="button" class="btn btn-outline" id="captureLocationBtn">
                         Obtener ubicación
                     </button>
-                </div>
+                </div> -->
 
                 <div class="time-display">
                     <div class="time-label">🕐 FECHA Y HORA</div>
