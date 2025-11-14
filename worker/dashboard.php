@@ -566,37 +566,7 @@ $address = $worker['address_text'] ?? null;
                 </button>
             </form>
 
-            <!-- Historial de registros -->
-            <?php if ($latestRecords): ?>
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">📜 Últimos registros</h3>
-                    </div>
-                    
-                    <?php foreach ($latestRecords as $record): ?>
-                        <div class="history-card">
-                            <div class="history-date">
-                                📅 <?php echo date('d/m/Y H:i', strtotime($record['recorded_at'])); ?>
-                            </div>
-                            <div class="history-coords">
-                                Lat: <?php echo number_format((float)$record['latitude'], 5); ?> · Lng: <?php echo number_format((float)$record['longitude'], 5); ?>
-                            </div>
-                            <div class="history-buttons">
-                                <a href="https://www.google.com/maps?q=<?php echo rawurlencode($record['latitude'] . ',' . $record['longitude']); ?>" 
-                                   target="_blank" rel="noopener" class="btn btn-outline btn-sm">
-                                    🗺️ Ver mapa
-                                </a>
-                                <?php if (!empty($record['attachment_path'])): ?>
-                                    <a href="../<?php echo htmlspecialchars($record['attachment_path']); ?>" 
-                                       target="_blank" rel="noopener" class="btn btn-outline btn-sm">
-                                        📄 Ver archivo
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+
         </div>
     </div>
 
