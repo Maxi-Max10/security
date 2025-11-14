@@ -37,9 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $attendanceErrors[] = 'No pudimos detectar tu ubicación. Activa el GPS e inténtalo nuevamente.';
     }
 
+    // Normalizar fecha/hora enviada desde el cliente.
+    // Si viene en formato 'YYYY-MM-DD HH:MM:SS' se asume hora local del servidor.
     $datetime = null;
     if ($recordedAtRaw) {
-        $datetime = date_create($recordedAtRaw);
+        if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $recordedAtRaw)) {
+            $dt = DateTime::createFromFormat('Y-m-d H:i:s', $recordedAtRaw, new DateTimeZone(date_default_timezone_get()));
+            if ($dt !== false) {
+                $datetime = $dt;
+            }
+        } else {
+            // Intentar parsear cualquier otro formato (ISO UTC, etc.)
+            $datetime = date_create($recordedAtRaw);
+        }
     }
     if (!$datetime) {
         $datetime = new DateTime('now', new DateTimeZone(date_default_timezone_get()));
@@ -612,6 +622,12 @@ $address = $worker['address_text'] ?? null;
 
             let locationCaptured = false;
 
+            // Helper: obtener timestamp local en formato SQL (YYYY-MM-DD HH:MM:SS)
+            const getLocalSqlTimestamp = (d = new Date()) => {
+                const pad = n => String(n).padStart(2, '0');
+                return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+            };
+
             // Actualizar reloj con fecha y hora
             const updateClock = () => {
                 const now = new Date();
@@ -634,7 +650,8 @@ $address = $worker['address_text'] ?? null;
                 clockDisplay.textContent = `${dayName}, ${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
                 
                 if (locationCaptured) {
-                    recordedAtInput.value = now.toISOString();
+                    // Guardar siempre hora local (evita desfases UTC)
+                    recordedAtInput.value = getLocalSqlTimestamp(now);
                 }
             };
 
@@ -647,7 +664,7 @@ $address = $worker['address_text'] ?? null;
                 latitudeInput.value = latitude.toFixed(7);
                 longitudeInput.value = longitude.toFixed(7);
                 locationCaptured = true;
-                recordedAtInput.value = new Date().toISOString();
+                recordedAtInput.value = getLocalSqlTimestamp();
                 submitBtn.disabled = false;
                 
                 locationDisplay.className = 'location-display active';
@@ -685,6 +702,14 @@ $address = $worker['address_text'] ?? null;
                     maximumAge: 0
                 });
             });
+
+            // Antes de enviar, fijar timestamp definitivo (por si pasó 1 segundo entre último tick y submit)
+            const form = document.querySelector('form.card');
+            if (form) {
+                form.addEventListener('submit', () => {
+                    recordedAtInput.value = getLocalSqlTimestamp();
+                });
+            }
 
             // Auto-capturar ubicación al cargar
             window.addEventListener('load', () => {
